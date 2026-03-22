@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "Sermon": {
+      "title": "Sermon",
+      "description": "A sermon document containing all generated content and metadata.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "The title of the sermon." },
+        "topic": { "type": "string", "description": "The main topic or theme." },
+        "goal": { "type": "string", "description": "The spiritual or practical goal of the message." },
+        "manuscript": { "type": "string", "description": "The original sermon manuscript or notes." },
+        "blog": { "type": "string", "description": "AI-generated blog post content." },
+        "youtubeScript": { "type": "string", "description": "AI-generated YouTube video script." },
+        "socialPosts": { "type": "string", "description": "AI-generated social media posts." },
+        "email": { "type": "string", "description": "AI-generated email newsletter content." },
+        "excerpt": { "type": "string", "description": "A short summary for display cards." },
+        "featuredImage": { "type": "string", "description": "URL to the featured image." },
+        "status": { 
+          "type": "string", 
+          "enum": ["draft", "processed", "scheduled", "published"],
+          "description": "The current workflow status."
+        },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "publishAt": { "type": "string", "format": "date-time", "description": "Scheduled publication timestamp." },
+        "podcastAudioUrl": { "type": "string", "description": "URL to the generated podcast audio." },
+        "podcastAudioStatus": { 
+          "type": "string", 
+          "enum": ["none", "generating", "ready", "failed"],
+          "description": "Podcast generation status."
+        },
+        "podcastGeneratedAt": { "type": "string", "format": "date-time", "description": "When the podcast was generated." }
+      },
+      "required": ["title", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/sermons/{sermonId}": {
+      "schema": "Sermon",
+      "description": "Collection of all sermons in the pipeline."
+    }
+  }
+}
