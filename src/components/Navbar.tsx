@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
+import { Menu, User, LogOut, LayoutDashboard, ChevronDown, HeartHandshake } from 'lucide-react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, logout } from '../firebase';
 
@@ -48,8 +48,8 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex justify-between items-center h-full">
           <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer" aria-label="Pastor Efe Ovenseri Home">
-            <span className="font-display font-bold text-xl tracking-tight text-text-main">
-              Pastor Efe <span className="text-brand-500">Ovenseri</span>
+            <span className="font-display font-bold text-xl tracking-tight text-text-on-dark-primary">
+              Pastor Efe <span className="text-accent-gold-primary">Ovenseri</span>
             </span>
           </Link>
           
@@ -58,14 +58,17 @@ export function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all relative group ${
                   isActive(link.path)
-                    ? 'text-brand-500 bg-brand-50'
-                    : 'text-text-muted hover:text-brand-500 hover:bg-brand-50'
+                    ? 'text-accent-gold-primary'
+                    : 'text-text-on-dark-secondary hover:text-accent-gold-primary'
                 }`}
                 aria-current={isActive(link.path) ? 'page' : undefined}
               >
                 {link.name}
+                {isActive(link.path) && (
+                  <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-accent-gold-primary shadow-[0_0_8px_rgba(212,175,55,0.6)]" />
+                )}
               </Link>
             ))}
 
@@ -73,18 +76,21 @@ export function Navbar() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsResourcesDropdownOpen(!isResourcesDropdownOpen)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 relative group ${
                   location.pathname.startsWith('/resources') || location.pathname === '/blog'
-                    ? 'text-brand-500 bg-brand-50'
-                    : 'text-text-muted hover:text-brand-500 hover:bg-brand-50'
+                    ? 'text-accent-gold-primary'
+                    : 'text-text-on-dark-secondary hover:text-accent-gold-primary'
                 }`}
               >
                 Resources
                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isResourcesDropdownOpen ? 'rotate-180' : ''}`} />
+                {(location.pathname.startsWith('/resources') || location.pathname === '/blog') && (
+                  <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-accent-gold-primary shadow-[0_0_8px_rgba(212,175,55,0.6)]" />
+                )}
               </button>
 
               {isResourcesDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-56 bg-white rounded-2xl shadow-saas-lg border border-surface-100 py-2 z-50 overflow-hidden">
+                <div className="absolute left-0 mt-2 w-56 glass-card py-2 z-50 overflow-hidden shadow-saas-lg">
                   {resourceCategories.map((cat) => (
                     <Link
                       key={cat.path}
@@ -92,8 +98,8 @@ export function Navbar() {
                       onClick={() => setIsResourcesDropdownOpen(false)}
                       className={`block px-4 py-3 text-sm font-medium transition-all ${
                         isResourceActive(cat.path.split('/').pop() || '')
-                          ? 'text-brand-500 bg-brand-50'
-                          : 'text-text-main hover:bg-brand-50 hover:text-brand-500'
+                          ? 'text-accent-gold-primary bg-white/5'
+                          : 'text-text-on-dark-primary hover:bg-white/5 hover:text-accent-gold-primary'
                       }`}
                     >
                       {cat.name}
@@ -103,32 +109,32 @@ export function Navbar() {
               )}
             </div>
             
-            <div className="pl-4 flex items-center space-x-4 border-l border-surface-100">
-              {user ? (
+            <div className="pl-4 flex items-center space-x-4 border-l border-white/10">
+              {user && (
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-surface-50 transition-all"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/5 transition-all"
                   >
                     {user.photoURL ? (
-                      <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full border border-surface-200" referrerPolicy="no-referrer" />
+                      <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full border border-white/10" referrerPolicy="no-referrer" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center text-brand-500">
+                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-accent-gold-primary">
                         <User className="w-5 h-5" />
                       </div>
                     )}
-                    <span className="text-sm font-semibold text-text-main hidden lg:block">
+                    <span className="text-sm font-semibold text-text-on-dark-primary hidden lg:block">
                       {user.displayName?.split(' ')[0]}
                     </span>
                   </button>
 
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-saas-lg border border-surface-100 py-2 z-50">
+                    <div className="absolute right-0 mt-2 w-56 glass-card py-2 z-50 shadow-saas-lg">
                       {isAdmin && (
                         <Link
                           to="/admin"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text-main hover:bg-brand-50 hover:text-brand-500 transition-all"
+                          className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text-on-dark-primary hover:bg-white/5 hover:text-accent-gold-primary transition-all"
                         >
                           <LayoutDashboard className="w-4 h-4" />
                           Admin Dashboard
@@ -139,7 +145,7 @@ export function Navbar() {
                           logout();
                           setIsUserMenuOpen(false);
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
                       >
                         <LogOut className="w-4 h-4" />
                         Sign Out
@@ -147,23 +153,13 @@ export function Navbar() {
                     </div>
                   )}
                 </div>
-              ) : (
-                <Link
-                  to="/signin"
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    isActive('/signin')
-                      ? 'text-brand-500 bg-brand-50'
-                      : 'text-text-muted hover:text-brand-500 hover:bg-brand-50'
-                  }`}
-                >
-                  Sign In
-                </Link>
               )}
               
               <Link
                 to="/contact"
-                className="px-5 py-2.5 bg-brand-500 text-white rounded-xl text-sm font-semibold hover:bg-brand-600 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-0.5 inline-block"
+                className="px-6 py-2.5 gold-premium-btn rounded-xl text-xs sm:text-sm font-bold inline-flex items-center gap-2"
               >
+                <HeartHandshake className="w-4 h-4" />
                 Partner With Us
               </Link>
             </div>
@@ -172,7 +168,7 @@ export function Navbar() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-text-main p-2 rounded-md hover:bg-surface-50 focus:outline-none"
+              className="text-text-on-dark-primary p-2 rounded-md hover:bg-white/5 focus:outline-none"
               aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-menu"
@@ -184,7 +180,7 @@ export function Navbar() {
       </div>
 
       {isMobileMenuOpen && (
-        <div id="mobile-menu" className="absolute top-20 left-0 w-full bg-white border-b border-surface-100 shadow-saas-lg z-40 md:hidden">
+        <div id="mobile-menu" className="absolute top-20 left-0 w-full bg-bg-dark-secondary border-b border-white/10 shadow-saas-lg z-40 md:hidden">
           <div className="px-4 pt-2 pb-6 space-y-2">
             {navLinks.map((link) => (
               <Link
@@ -193,8 +189,8 @@ export function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`w-full text-left block px-4 py-3 rounded-lg text-base font-medium ${
                   isActive(link.path)
-                    ? 'text-brand-500 bg-brand-50'
-                    : 'text-text-main hover:bg-brand-50 hover:text-brand-500'
+                    ? 'text-accent-gold-primary bg-white/5'
+                    : 'text-text-on-dark-primary hover:bg-white/5 hover:text-accent-gold-primary'
                 }`}
               >
                 {link.name}
@@ -203,7 +199,7 @@ export function Navbar() {
 
             {/* Mobile Resources Dropdown */}
             <div className="space-y-1">
-              <div className="px-4 py-3 text-xs font-bold text-text-muted uppercase tracking-widest">Resources</div>
+              <div className="px-4 py-3 text-xs font-bold text-text-on-dark-secondary uppercase tracking-widest">Resources</div>
               {resourceCategories.map((cat) => (
                 <Link
                   key={cat.path}
@@ -211,8 +207,8 @@ export function Navbar() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`w-full text-left block px-8 py-3 rounded-lg text-base font-medium ${
                     isResourceActive(cat.path.split('/').pop() || '')
-                      ? 'text-brand-500 bg-brand-50'
-                      : 'text-text-main hover:bg-brand-50 hover:text-brand-500'
+                      ? 'text-accent-gold-primary bg-white/5'
+                      : 'text-text-on-dark-primary hover:bg-white/5 hover:text-accent-gold-primary'
                   }`}
                 >
                   {cat.name}
@@ -220,13 +216,13 @@ export function Navbar() {
               ))}
             </div>
             
-            {user ? (
+            {user && (
               <>
                 {isAdmin && (
                   <Link
                     to="/admin"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full text-left block px-4 py-3 rounded-lg text-base font-medium text-text-main hover:bg-brand-50 hover:text-brand-500"
+                    className="w-full text-left block px-4 py-3 rounded-lg text-base font-medium text-text-on-dark-primary hover:bg-white/5 hover:text-accent-gold-primary"
                   >
                     Admin Dashboard
                   </Link>
@@ -236,26 +232,19 @@ export function Navbar() {
                     logout();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left block px-4 py-3 rounded-lg text-base font-medium text-red-600 hover:bg-red-50"
+                  className="w-full text-left block px-4 py-3 rounded-lg text-base font-medium text-red-400 hover:bg-red-500/10"
                 >
                   Sign Out
                 </button>
               </>
-            ) : (
-              <Link
-                to="/signin"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full text-left block px-4 py-3 rounded-lg text-base font-medium text-text-main hover:bg-brand-50 hover:text-brand-500"
-              >
-                Sign In
-              </Link>
             )}
 
             <Link
               to="/contact"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full text-center mt-4 block px-4 py-3 bg-brand-500 text-white rounded-xl text-base font-semibold"
+              className="w-full justify-center mt-4 px-4 py-3 gold-premium-btn rounded-xl text-sm font-bold inline-flex items-center gap-2"
             >
+              <HeartHandshake className="w-5 h-5" />
               Partner With Us
             </Link>
           </div>

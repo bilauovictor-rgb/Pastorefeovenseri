@@ -3,10 +3,11 @@ import { useEffect, useState, useMemo } from 'react';
 import { SEO } from '../components/SEO';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 
 interface Resource {
   id: string | number;
+  slug?: string;
   type: string;
   title: string;
   description: string;
@@ -23,6 +24,7 @@ export function Blog() {
   const { category } = useParams();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Map URL category to Firestore category
@@ -40,7 +42,9 @@ export function Blog() {
     
     const q = query(
       collection(db, 'sermons'),
-      where('status', '==', 'published')
+      where('category', '==', currentCategory),
+      where('status', '==', 'published'),
+      orderBy('createdAt', 'desc')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -56,18 +60,15 @@ export function Blog() {
             type: data.type || 'Sermon',
             icon: data.icon || (data.category === 'Leadership Podcasts' ? 'headphones' : data.category === 'Events' ? 'calendar' : 'play')
           } as Resource;
-        })
-        .filter(s => {
-          const isPublished = s.status?.toLowerCase() === 'published';
-          const matchesCategory = s.category === currentCategory;
-          return isPublished && matchesCategory;
         });
 
       console.log(`Filtered to ${firestoreSermons.length} published resources for category: ${currentCategory}`);
       setResources(firestoreSermons);
+      setError(null);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching sermons:", error);
+      setError(error.message);
       setLoading(false);
     });
 
@@ -97,29 +98,44 @@ export function Blog() {
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
-      case 'play': return <PlayCircle className="w-16 h-16 text-brand-500 group-hover:scale-110 transition-transform duration-300 fill-current" />;
-      case 'headphones': return <Headphones className="w-16 h-16 text-gold-500 group-hover:scale-110 transition-transform duration-300 fill-current" />;
-      case 'calendar': return <Calendar className="w-16 h-16 text-brand-500 group-hover:scale-110 transition-transform duration-300 fill-current" />;
-      default: return <PlayCircle className="w-16 h-16 text-brand-500 group-hover:scale-110 transition-transform duration-300 fill-current" />;
+      case 'play': return <PlayCircle className="w-16 h-16 text-accent-gold-secondary group-hover:scale-110 transition-transform duration-300 fill-current" />;
+      case 'headphones': return <Headphones className="w-16 h-16 text-accent-gold-secondary group-hover:scale-110 transition-transform duration-300 fill-current" />;
+      case 'calendar': return <Calendar className="w-16 h-16 text-accent-gold-secondary group-hover:scale-110 transition-transform duration-300 fill-current" />;
+      default: return <PlayCircle className="w-16 h-16 text-accent-gold-secondary group-hover:scale-110 transition-transform duration-300 fill-current" />;
     }
   };
 
   return (
-    <div className="page-section bg-white active">
+    <div className="page-section active bg-bg-dark-primary min-h-screen">
       <SEO title={pageInfo.title} description={pageInfo.description} />
-      <div className="bg-surface-50 border-b border-surface-100 pt-16 pb-20">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-text-main mb-6">{pageInfo.title}</h1>
-          <p className="text-xl text-text-muted leading-relaxed">{pageInfo.description}</p>
+      
+      {/* Hero Section */}
+      <div className="relative overflow-hidden pt-24 pb-20 lg:pt-32 lg:pb-28 bg-bg-dark-primary">
+        <div className="absolute inset-0 bg-gradient-to-br from-bg-dark-primary via-bg-dark-secondary to-bg-dark-tertiary opacity-90"></div>
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-accent-purple-soft/10 rounded-full blur-[120px] pointer-events-none"></div>
+        
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/5 border border-white/10 text-accent-gold-secondary text-sm font-semibold tracking-widest uppercase mb-6 backdrop-blur-md shadow-sm">
+            {category === 'leadership-podcasts' ? 'Audio Wisdom' : category === 'events' ? 'Kingdom Gatherings' : 'Spiritual Nourishment'}
+          </div>
+          <h1 className="text-4xl md:text-6xl font-display font-bold text-text-on-dark-primary mb-6 leading-tight">{pageInfo.title}</h1>
+          <p className="text-xl text-text-on-dark-secondary leading-relaxed font-light max-w-3xl mx-auto">{pageInfo.description}</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative">
+        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-accent-purple-soft/5 rounded-full blur-[150px] pointer-events-none"></div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
           {loading ? (
-            <div className="col-span-full flex flex-col items-center justify-center py-20 text-text-muted">
-              <Loader2 className="w-12 h-12 animate-spin mb-4 text-brand-500" />
+            <div className="col-span-full flex flex-col items-center justify-center py-20 text-text-on-dark-secondary">
+              <Loader2 className="w-12 h-12 animate-spin mb-4 text-accent-gold-secondary" />
               <p className="text-lg font-medium">Loading {category || 'resources'}...</p>
+            </div>
+          ) : error ? (
+            <div className="col-span-full text-center py-20 bg-red-500/10 backdrop-blur-sm rounded-3xl border border-dashed border-red-500/30">
+              <p className="text-red-400 text-lg font-bold mb-2">Failed to load resources</p>
+              <p className="text-text-on-dark-secondary text-sm font-light max-w-md mx-auto">{error}</p>
+              <p className="text-text-on-dark-muted text-xs mt-4">This usually requires a Firestore composite index to be created.</p>
             </div>
           ) : resources.length > 0 ? (
             resources.map(resource => (
@@ -127,40 +143,41 @@ export function Blog() {
                 key={resource.id} 
                 role="button"
                 tabIndex={0}
-                onClick={() => navigate(`/resources/sermon/${resource.id}`)}
+                onClick={() => navigate(`/resources/sermons/${resource.slug || resource.id}`)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    navigate(`/resources/sermon/${resource.id}`);
+                    navigate(`/resources/sermons/${resource.slug || resource.id}`);
                   }
                 }}
-                className="bg-white rounded-2xl border border-surface-100 shadow-sm hover:shadow-saas-lg transition-all duration-300 overflow-hidden group flex flex-col cursor-pointer focus:ring-2 focus:ring-brand-500 outline-none"
+                className="bg-bg-dark-secondary/80 backdrop-blur-md border border-border-dark-soft overflow-hidden rounded-3xl group flex flex-col cursor-pointer hover:border-accent-gold-secondary/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.05)] transition-all duration-500 focus:ring-2 focus:ring-accent-gold-secondary outline-none"
               >
-                <div className="h-48 bg-surface-50 flex items-center justify-center relative border-b border-surface-100 overflow-hidden">
+                <div className="h-48 bg-bg-dark-primary flex items-center justify-center relative border-b border-border-dark-soft overflow-hidden">
                   {(resource as any).featuredImage ? (
                     <img 
                       src={(resource as any).featuredImage} 
                       alt={resource.title} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       referrerPolicy="no-referrer"
                     />
                   ) : (
                     <>
-                      <div className={`absolute inset-0 ${resource.icon === 'headphones' ? 'bg-gold-500' : 'bg-brand-500'} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
+                      <div className="absolute inset-0 bg-accent-purple-soft/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       {getIcon(resource.icon)}
                     </>
                   )}
                 </div>
-                <div className="p-8 flex-grow flex flex-col">
-                  <span className={`text-xs font-bold uppercase ${resource.icon === 'headphones' ? 'text-gold-600' : 'text-brand-500'} tracking-wider mb-3`}>{resource.type}</span>
-                  <h3 className={`text-xl font-display font-bold text-text-main mb-3 group-hover:${resource.icon === 'headphones' ? 'text-gold-600' : 'text-brand-500'} transition-colors`}>{resource.title}</h3>
-                  <p className="text-text-muted text-sm leading-relaxed mb-6 flex-grow line-clamp-3">{resource.excerpt || resource.description}</p>
+                <div className="p-8 flex-grow flex flex-col relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent-purple-soft/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                  <span className="text-xs font-bold uppercase text-accent-gold-secondary tracking-wider mb-3 relative z-10">{resource.type}</span>
+                  <h3 className="text-xl font-display font-bold text-text-on-dark-primary mb-3 group-hover:text-accent-gold-secondary transition-colors relative z-10">{resource.title}</h3>
+                  <p className="text-text-on-dark-secondary font-light text-sm leading-relaxed mb-6 flex-grow line-clamp-3 relative z-10">{resource.excerpt || resource.description}</p>
                   
                   {(resource.audioUrl || (resource.podcastAudioStatus === 'ready' && resource.podcastAudioUrl)) && (
-                    <div className="mb-6" onClick={(e) => e.stopPropagation()}>
+                    <div className="mb-6 relative z-10" onClick={(e) => e.stopPropagation()}>
                       <audio 
                         controls 
-                        className="w-full h-10 rounded-lg bg-surface-50"
+                        className="w-full h-10 rounded-lg bg-white/5"
                         src={resource.audioUrl || resource.podcastAudioUrl}
                       >
                         Your browser does not support the audio element.
@@ -168,16 +185,16 @@ export function Blog() {
                     </div>
                   )}
 
-                  <span className="text-sm font-semibold text-text-main flex items-center">
+                  <span className="text-sm font-semibold text-text-on-dark-primary flex items-center group-hover:text-accent-gold-secondary transition-colors relative z-10">
                     {resource.icon === 'play' ? 'Watch Resource' : resource.icon === 'headphones' ? 'Listen Now' : 'View Gallery'} 
-                    <ArrowRight className={`w-4 h-4 ml-2 ${resource.icon === 'headphones' ? 'text-gold-500' : 'text-brand-500'}`} />
+                    <ArrowRight className="w-4 h-4 ml-2 text-accent-gold-secondary" />
                   </span>
                 </div>
               </div>
             ))
           ) : (
-            <div className="col-span-full text-center py-20 bg-surface-50 rounded-3xl border border-dashed border-surface-200">
-              <p className="text-text-muted text-lg">No {category || 'resources'} found in this category.</p>
+            <div className="col-span-full text-center py-20 bg-bg-dark-secondary/50 backdrop-blur-sm rounded-3xl border border-dashed border-border-dark-soft">
+              <p className="text-text-on-dark-secondary text-lg font-light">No {category || 'resources'} found in this category.</p>
             </div>
           )}
         </div>

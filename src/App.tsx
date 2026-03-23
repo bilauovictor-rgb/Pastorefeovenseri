@@ -22,7 +22,7 @@ function AppContent() {
   const isAdminPage = location.pathname.startsWith('/admin') || location.pathname === '/signin' || location.pathname === '/signup';
 
   return (
-    <div className="font-sans antialiased flex flex-col min-h-screen bg-white text-text-muted">
+    <div className="font-sans antialiased flex flex-col min-h-screen text-text-muted">
       {!isAdminPage && <Navbar />}
       <main className={`flex-grow ${!isAdminPage ? 'pt-20' : ''}`}>
         <Routes>
@@ -31,8 +31,9 @@ function AppContent() {
           <Route path="/services" element={<Services />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/resources/:category" element={<Blog />} />
-          <Route path="/blog/:id" element={<SermonDetail />} />
+          <Route path="/resources/sermons/:slug" element={<SermonDetail />} />
           <Route path="/resources/sermon/:id" element={<SermonDetail />} />
+          <Route path="/blog/:id" element={<SermonDetail />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/signin" element={<SignIn />} />
