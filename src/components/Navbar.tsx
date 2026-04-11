@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, User, LogOut, LayoutDashboard, ChevronDown, HeartHandshake } from 'lucide-react';
+import { Menu, User, LogOut, LayoutDashboard, ChevronDown, HeartHandshake, X } from 'lucide-react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, logout } from '../firebase';
+import { motion, AnimatePresence } from 'motion/react';
 
 const ADMIN_EMAIL = "officialgiganticcomputers@gmail.com";
 
@@ -10,8 +11,8 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isResourcesDropdownOpen, setIsResourcesDropdownOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const mobileDropdownRef = useRef<HTMLDivElement>(null);
   const [user] = useAuthState(auth);
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,24 +33,57 @@ export function Navbar() {
     { name: 'Events', path: '/resources/events' },
   ];
 
-  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close dropdowns when clicking outside or pressing Escape
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsResourcesDropdownOpen(false);
       }
     }
+    
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsResourcesDropdownOpen(false);
+        setIsUserMenuOpen(false);
+        setIsMobileMenuOpen(false);
+      }
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   return (
-    <nav aria-label="Main Navigation" className="glass-nav fixed w-full z-50 transition-all duration-300 h-20 flex items-center">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex justify-between items-center h-full">
-          <Link to="/" className="flex-shrink-0 flex items-center cursor-pointer" aria-label="Pastor Efe Ovenseri Home">
-            <span className="font-display font-bold text-xl tracking-tight text-text-on-dark-primary">
-              Pastor Efe <span className="text-accent-gold-primary">Ovenseri</span>
+    <nav 
+      aria-label="Main Navigation" 
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+        scrolled ? 'py-4' : 'py-6'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`glass-nav rounded-2xl px-6 h-16 flex items-center justify-between transition-all duration-500 ${
+          scrolled ? 'shadow-2xl border-accent-gold-primary/30' : 'border-transparent'
+        }`}>
+          <Link 
+            to="/" 
+            className="flex-shrink-0 flex items-center cursor-pointer" 
+            aria-label="Pastor Efe Ovenseri Home"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <span className="font-display font-bold text-lg lg:text-2xl tracking-tight gold-gradient-text">
+              Pastor Efe
             </span>
           </Link>
           
@@ -58,16 +92,19 @@ export function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all relative group ${
+                className={`px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-all relative group ${
                   isActive(link.path)
                     ? 'text-accent-gold-primary'
-                    : 'text-text-on-dark-secondary hover:text-accent-gold-primary'
+                    : 'text-text-secondary hover:text-accent-gold-primary'
                 }`}
                 aria-current={isActive(link.path) ? 'page' : undefined}
               >
                 {link.name}
                 {isActive(link.path) && (
-                  <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-accent-gold-primary shadow-[0_0_8px_rgba(212,175,55,0.6)]" />
+                  <motion.span 
+                    layoutId="nav-underline"
+                    className="absolute bottom-0 left-4 right-4 h-0.5 bg-accent-gold-primary shadow-[0_0_8px_rgba(212,175,55,0.6)]" 
+                  />
                 )}
               </Link>
             ))}
@@ -76,37 +113,45 @@ export function Navbar() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsResourcesDropdownOpen(!isResourcesDropdownOpen)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 relative group ${
+                aria-expanded={isResourcesDropdownOpen}
+                aria-haspopup="true"
+                className={`px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-all flex items-center gap-1 relative group ${
                   location.pathname.startsWith('/resources') || location.pathname === '/blog'
                     ? 'text-accent-gold-primary'
-                    : 'text-text-on-dark-secondary hover:text-accent-gold-primary'
+                    : 'text-text-secondary hover:text-accent-gold-primary'
                 }`}
               >
                 Resources
                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isResourcesDropdownOpen ? 'rotate-180' : ''}`} />
-                {(location.pathname.startsWith('/resources') || location.pathname === '/blog') && (
-                  <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-accent-gold-primary shadow-[0_0_8px_rgba(212,175,55,0.6)]" />
-                )}
               </button>
 
-              {isResourcesDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-56 glass-card py-2 z-50 overflow-hidden shadow-saas-lg">
-                  {resourceCategories.map((cat) => (
-                    <Link
-                      key={cat.path}
-                      to={cat.path}
-                      onClick={() => setIsResourcesDropdownOpen(false)}
-                      className={`block px-4 py-3 text-sm font-medium transition-all ${
-                        isResourceActive(cat.path.split('/').pop() || '')
-                          ? 'text-accent-gold-primary bg-white/5'
-                          : 'text-text-on-dark-primary hover:bg-white/5 hover:text-accent-gold-primary'
-                      }`}
-                    >
-                      {cat.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
+              <AnimatePresence>
+                {isResourcesDropdownOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    role="menu"
+                    className="absolute left-0 mt-4 w-56 glass-card py-2 z-50 overflow-hidden shadow-2xl border border-accent-gold-primary/20"
+                  >
+                    {resourceCategories.map((cat) => (
+                      <Link
+                        key={cat.path}
+                        to={cat.path}
+                        role="menuitem"
+                        onClick={() => setIsResourcesDropdownOpen(false)}
+                        className={`block px-4 py-3 text-sm font-medium transition-all ${
+                          isResourceActive(cat.path.split('/').pop() || '')
+                            ? 'text-accent-gold-primary bg-white/5'
+                            : 'text-text-primary hover:bg-white/5 hover:text-accent-gold-primary'
+                        }`}
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             
             <div className="pl-4 flex items-center space-x-4 border-l border-white/10">
@@ -114,6 +159,9 @@ export function Navbar() {
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    aria-expanded={isUserMenuOpen}
+                    aria-haspopup="true"
+                    aria-label="User menu"
                     className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/5 transition-all"
                   >
                     {user.photoURL ? (
@@ -123,133 +171,162 @@ export function Navbar() {
                         <User className="w-5 h-5" />
                       </div>
                     )}
-                    <span className="text-sm font-semibold text-text-on-dark-primary hidden lg:block">
-                      {user.displayName?.split(' ')[0]}
-                    </span>
                   </button>
 
-                  {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 glass-card py-2 z-50 shadow-saas-lg">
-                      {isAdmin && (
-                        <Link
-                          to="/admin"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text-on-dark-primary hover:bg-white/5 hover:text-accent-gold-primary transition-all"
-                        >
-                          <LayoutDashboard className="w-4 h-4" />
-                          Admin Dashboard
-                        </Link>
-                      )}
-                      <button
-                        onClick={() => {
-                          logout();
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
+                  <AnimatePresence>
+                    {isUserMenuOpen && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        role="menu"
+                        className="absolute right-0 mt-4 w-56 glass-card py-2 z-50 shadow-2xl border border-accent-gold-primary/20"
                       >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
+                        {isAdmin && (
+                          <Link
+                            to="/admin"
+                            role="menuitem"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text-primary hover:bg-white/5 hover:text-accent-gold-primary transition-all"
+                          >
+                            <LayoutDashboard className="w-4 h-4" />
+                            Admin Dashboard
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => {
+                            logout();
+                            setIsUserMenuOpen(false);
+                          }}
+                          role="menuitem"
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Sign Out
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
               
               <Link
                 to="/contact"
-                className="px-6 py-2.5 gold-premium-btn rounded-xl text-xs sm:text-sm font-bold inline-flex items-center gap-2"
+                className="px-6 py-2 gold-premium-btn rounded-xl text-sm font-bold inline-flex items-center gap-2 whitespace-nowrap"
               >
                 <HeartHandshake className="w-4 h-4" />
-                Partner With Us
+                Partner
               </Link>
             </div>
           </div>
 
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center space-x-4">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-text-on-dark-primary p-2 rounded-md hover:bg-white/5 focus:outline-none"
-              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMobileMenuOpen}
-              aria-controls="mobile-menu"
+              className="text-text-primary p-2 rounded-md hover:bg-white/5 focus:outline-none transition-colors relative z-[60]"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             >
-              <Menu className="w-6 h-6" />
+              <div className="w-6 h-5 flex flex-col justify-between relative">
+                <motion.span 
+                  animate={isMobileMenuOpen ? { rotate: 45, y: 9 } : { rotate: 0, y: 0 }}
+                  className="w-full h-0.5 bg-accent-gold-primary rounded-full origin-left" 
+                />
+                <motion.span 
+                  animate={isMobileMenuOpen ? { opacity: 0 } : { opacity: 1 }}
+                  className="w-full h-0.5 bg-accent-gold-primary rounded-full" 
+                />
+                <motion.span 
+                  animate={isMobileMenuOpen ? { rotate: -45, y: -9 } : { rotate: 0, y: 0 }}
+                  className="w-full h-0.5 bg-accent-gold-primary rounded-full origin-left" 
+                />
+              </div>
             </button>
           </div>
         </div>
       </div>
 
-      {isMobileMenuOpen && (
-        <div id="mobile-menu" className="absolute top-20 left-0 w-full bg-bg-dark-secondary border-b border-white/10 shadow-saas-lg z-40 md:hidden">
-          <div className="px-4 pt-2 pb-6 space-y-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`w-full text-left block px-4 py-3 rounded-lg text-base font-medium ${
-                  isActive(link.path)
-                    ? 'text-accent-gold-primary bg-white/5'
-                    : 'text-text-on-dark-primary hover:bg-white/5 hover:text-accent-gold-primary'
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-
-            {/* Mobile Resources Dropdown */}
-            <div className="space-y-1">
-              <div className="px-4 py-3 text-xs font-bold text-text-on-dark-secondary uppercase tracking-widest">Resources</div>
-              {resourceCategories.map((cat) => (
-                <Link
-                  key={cat.path}
-                  to={cat.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`w-full text-left block px-8 py-3 rounded-lg text-base font-medium ${
-                    isResourceActive(cat.path.split('/').pop() || '')
-                      ? 'text-accent-gold-primary bg-white/5'
-                      : 'text-text-on-dark-primary hover:bg-white/5 hover:text-accent-gold-primary'
-                  }`}
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-            
-            {user && (
-              <>
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full text-left block px-4 py-3 rounded-lg text-base font-medium text-text-on-dark-primary hover:bg-white/5 hover:text-accent-gold-primary"
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 w-full h-screen celestial-overlay z-[55] md:hidden flex flex-col items-center justify-center p-8 overflow-y-auto"
+          >
+            <div className="w-full max-w-md mx-auto space-y-10 text-center flex flex-col items-center justify-center">
+              <div className="space-y-6 w-full">
+                {navLinks.map((link, i) => (
+                  <motion.div
+                    key={link.path}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
                   >
-                    Admin Dashboard
-                  </Link>
-                )}
-                <button
-                  onClick={() => {
-                    logout();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full text-left block px-4 py-3 rounded-lg text-base font-medium text-red-400 hover:bg-red-500/10"
-                >
-                  Sign Out
-                </button>
-              </>
-            )}
+                    <Link
+                      to={link.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`text-2xl sm:text-3xl font-display font-bold block transition-all hover:scale-105 ${
+                        isActive(link.path) ? 'gold-gradient-text' : 'text-white/90 hover:text-white'
+                      }`}
+                    >
+                      {link.name}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
 
-            <Link
-              to="/contact"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full justify-center mt-4 px-4 py-3 gold-premium-btn rounded-xl text-sm font-bold inline-flex items-center gap-2"
-            >
-              <HeartHandshake className="w-5 h-5" />
-              Partner With Us
-            </Link>
-          </div>
-        </div>
-      )}
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-accent-gold-primary/30 to-transparent" />
+
+              <div className="space-y-4 w-full">
+                <p className="text-accent-gold-primary/60 text-xs uppercase tracking-widest font-bold mb-4">Resources</p>
+                {resourceCategories.map((cat, i) => (
+                  <motion.div
+                    key={cat.path}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + (i * 0.1) }}
+                  >
+                    <Link
+                      to={cat.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`text-xl font-medium block transition-all hover:text-accent-gold-primary ${
+                        isResourceActive(cat.path.split('/').pop() || '') ? 'text-accent-gold-primary' : 'text-text-secondary'
+                      }`}
+                    >
+                      {cat.name}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="pt-4"
+              >
+                <Link
+                  to="/contact"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="gold-premium-btn px-10 py-4 rounded-2xl text-lg font-bold inline-flex items-center gap-3 shadow-xl"
+                >
+                  <HeartHandshake className="w-5 h-5" />
+                  Partner With Us
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* Background Elements for Celestial Overlay */}
+            <div className="absolute inset-0 z-[-1] opacity-30">
+              <div className="divine-glow top-0 left-0 w-full h-full" />
+              <div className="divine-geometry divine-circle w-[300px] h-[300px] top-[-10%] right-[-10%]" />
+              <div className="divine-geometry divine-circle w-[200px] h-[200px] bottom-[-5%] left-[-5%]" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }

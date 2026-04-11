@@ -1,4 +1,4 @@
-import { PlayCircle, Headphones, Calendar, ArrowRight, Loader2 } from 'lucide-react';
+import { CirclePlay, Headphones, Calendar, ArrowRight, Loader2, Video, User, MapPin, Search, X } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { SEO } from '../components/SEO';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -15,9 +15,13 @@ interface Resource {
   icon: string;
   status?: string;
   audioUrl?: string;
-  podcastAudioUrl?: string;
-  podcastAudioStatus?: string;
+  videoUrl?: string;
+  audioEmbedUrl?: string;
+  youtubeId?: string;
   excerpt?: string;
+  speaker?: string;
+  date?: string;
+  location?: string;
 }
 
 export function Blog() {
@@ -25,6 +29,7 @@ export function Blog() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   // Map URL category to Firestore category
@@ -80,125 +85,296 @@ export function Blog() {
       case 'leadership-podcasts':
         return {
           title: 'Leadership Podcasts',
-          description: 'Equipping leaders with spiritual wisdom and practical excellence for global impact.'
+          description: 'Equipping leaders with spiritual wisdom and practical excellence for global impact. Join Pastor Efe Ovenseri for transformative leadership insights and growth.'
         };
       case 'events':
         return {
           title: 'Ministry Events',
-          description: 'Stay updated with upcoming conferences, global summits, and ministry gatherings.'
+          description: 'Stay updated with upcoming conferences, global summits, and ministry gatherings. Join Pastor Efe Ovenseri for powerful spiritual encounters and leadership.'
         };
       case 'sermons':
       default:
         return {
           title: 'Sermon Archive',
-          description: 'Access transformative teachings and divine messages from Pastor Efe Ovenseri.'
+          description: 'Access transformative teachings and divine messages from Pastor Efe Ovenseri. Explore our library of sermons designed to empower your faith and spiritual life.'
         };
     }
   }, [category]);
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
-      case 'play': return <PlayCircle className="w-16 h-16 text-accent-gold-secondary group-hover:scale-110 transition-transform duration-300 fill-current" />;
+      case 'play': return <CirclePlay className="w-16 h-16 text-accent-gold-secondary group-hover:scale-110 transition-transform duration-300 fill-current" />;
       case 'headphones': return <Headphones className="w-16 h-16 text-accent-gold-secondary group-hover:scale-110 transition-transform duration-300 fill-current" />;
       case 'calendar': return <Calendar className="w-16 h-16 text-accent-gold-secondary group-hover:scale-110 transition-transform duration-300 fill-current" />;
-      default: return <PlayCircle className="w-16 h-16 text-accent-gold-secondary group-hover:scale-110 transition-transform duration-300 fill-current" />;
+      default: return <CirclePlay className="w-16 h-16 text-accent-gold-secondary group-hover:scale-110 transition-transform duration-300 fill-current" />;
     }
   };
 
+  const getDemoData = (): Resource[] => {
+    if (category === 'leadership-podcasts') {
+      return [
+        {
+          id: 'demo-podcast-1',
+          slug: 'demo-podcast-1',
+          type: 'Podcast',
+          title: 'Leading with Spiritual Intelligence',
+          description: 'Discover how to apply spiritual discernment to everyday leadership challenges.',
+          excerpt: 'Discover how to apply spiritual discernment to everyday leadership challenges.',
+          category: 'Leadership Podcasts',
+          icon: 'headphones',
+          youtubeId: 'dQw4w9WgXcQ',
+          speaker: 'Pastor Efe Ovenseri',
+        },
+        {
+          id: 'demo-podcast-2',
+          slug: 'demo-podcast-2',
+          type: 'Podcast',
+          title: 'The Discipline of Visionary Leaders',
+          description: 'Learn the habits and disciplines that separate good leaders from visionary ones.',
+          excerpt: 'Learn the habits and disciplines that separate good leaders from visionary ones.',
+          category: 'Leadership Podcasts',
+          icon: 'headphones',
+          youtubeId: 'dQw4w9WgXcQ',
+          speaker: 'Pastor Efe Ovenseri',
+        },
+        {
+          id: 'demo-podcast-3',
+          slug: 'demo-podcast-3',
+          type: 'Podcast',
+          title: 'Kingdom Leadership in a Modern World',
+          description: 'Navigating the complexities of modern business with Kingdom principles.',
+          excerpt: 'Navigating the complexities of modern business with Kingdom principles.',
+          category: 'Leadership Podcasts',
+          icon: 'headphones',
+          youtubeId: 'dQw4w9WgXcQ',
+          speaker: 'Pastor Efe Ovenseri',
+        },
+        {
+          id: 'demo-podcast-4',
+          slug: 'demo-podcast-4',
+          type: 'Podcast',
+          title: 'Building Influence with Integrity',
+          description: 'How to grow your influence without compromising your core values.',
+          excerpt: 'How to grow your influence without compromising your core values.',
+          category: 'Leadership Podcasts',
+          icon: 'headphones',
+          youtubeId: 'dQw4w9WgXcQ',
+          speaker: 'Pastor Efe Ovenseri',
+        }
+      ];
+    } else if (category === 'events') {
+      return [
+        {
+          id: 'demo-event-1',
+          slug: 'demo-event-1',
+          type: 'Conference',
+          title: 'Global Leadership Summit 2026',
+          description: 'Join leaders from around the world for a transformative 3-day summit.',
+          excerpt: 'Join leaders from around the world for a transformative 3-day summit.',
+          category: 'Events',
+          icon: 'calendar',
+          date: 'August 15-17, 2026',
+          location: 'Global Online',
+        },
+        {
+          id: 'demo-event-2',
+          slug: 'demo-event-2',
+          type: 'Conference',
+          title: 'Kingdom Builders Conference',
+          description: 'A gathering for entrepreneurs and professionals building the Kingdom in the marketplace.',
+          excerpt: 'A gathering for entrepreneurs and professionals building the Kingdom in the marketplace.',
+          category: 'Events',
+          icon: 'calendar',
+          date: 'October 10-12, 2026',
+          location: 'Lagos, Nigeria',
+        },
+        {
+          id: 'demo-event-3',
+          slug: 'demo-event-3',
+          type: 'Gathering',
+          title: 'Marketplace Apostolic Gathering',
+          description: 'Equipping believers to take apostolic authority in their professional spheres.',
+          excerpt: 'Equipping believers to take apostolic authority in their professional spheres.',
+          category: 'Events',
+          icon: 'calendar',
+          date: 'November 5, 2026',
+          location: 'Global Online',
+        },
+        {
+          id: 'demo-event-4',
+          slug: 'demo-event-4',
+          type: 'Retreat',
+          title: 'Annual Ministers Retreat',
+          description: 'A time of refreshing, impartation, and strategic alignment for ministry leaders.',
+          excerpt: 'A time of refreshing, impartation, and strategic alignment for ministry leaders.',
+          category: 'Events',
+          icon: 'calendar',
+          date: 'December 1-3, 2026',
+          location: 'Lagos, Nigeria',
+        }
+      ];
+    }
+    return [];
+  };
+
+  const displayResources = resources.length > 0 ? resources : getDemoData();
+
+  const filteredResources = useMemo(() => {
+    if (!searchTerm.trim()) return displayResources;
+    
+    const term = searchTerm.toLowerCase().trim();
+    return displayResources.filter(r => 
+      r.title.toLowerCase().includes(term) ||
+      r.category.toLowerCase().includes(term) ||
+      (r.description && r.description.toLowerCase().includes(term)) ||
+      (r.excerpt && r.excerpt.toLowerCase().includes(term)) ||
+      (r.type && r.type.toLowerCase().includes(term)) ||
+      (r.speaker && r.speaker.toLowerCase().includes(term))
+    );
+  }, [searchTerm, displayResources]);
+
   return (
-    <div className="page-section active bg-bg-dark-primary min-h-screen">
+    <div className="min-h-screen bg-bg-midnight pt-20">
       <SEO title={pageInfo.title} description={pageInfo.description} />
       
       {/* Hero Section */}
-      <div className="relative overflow-hidden pt-24 pb-20 lg:pt-32 lg:pb-28 bg-bg-dark-primary">
-        <div className="absolute inset-0 bg-gradient-to-br from-bg-dark-primary via-bg-dark-secondary to-bg-dark-tertiary opacity-90"></div>
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-accent-purple-soft/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <section className="relative py-24 overflow-hidden border-b border-gold/10 bg-bg-navy-deep">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.05),transparent_50%)]"></div>
+        <div className="divine-glow top-0 right-0 opacity-20"></div>
         
-        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/5 border border-white/10 text-accent-gold-secondary text-sm font-semibold tracking-widest uppercase mb-6 backdrop-blur-md shadow-sm">
-            {category === 'leadership-podcasts' ? 'Audio Wisdom' : category === 'events' ? 'Kingdom Gatherings' : 'Spiritual Nourishment'}
-          </div>
-          <h1 className="text-4xl md:text-6xl font-display font-bold text-text-on-dark-primary mb-6 leading-tight">{pageInfo.title}</h1>
-          <p className="text-xl text-text-on-dark-secondary leading-relaxed font-light max-w-3xl mx-auto">{pageInfo.description}</p>
-        </div>
-      </div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <span className="inline-block px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-[10px] font-bold tracking-[0.2em] uppercase mb-6">
+              {category === 'leadership-podcasts' ? 'Audio Wisdom' : category === 'events' ? 'Kingdom Gatherings' : 'Spiritual Nourishment'}
+            </span>
+            <h1 className="text-4xl md:text-6xl font-display font-bold mb-6 gold-gradient-text leading-tight">
+              {pageInfo.title}
+            </h1>
+            <p className="text-lg text-gray-400 font-light leading-relaxed mb-10">
+              {pageInfo.description}
+            </p>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative">
-        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-accent-purple-soft/5 rounded-full blur-[150px] pointer-events-none"></div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+            {/* Search Bar */}
+            <div className="relative max-w-xl mx-auto group">
+              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-500 group-focus-within:text-gold transition-colors" />
+              </div>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={`Search ${pageInfo.title.toLowerCase()}...`}
+                className="block w-full pl-12 pr-12 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-transparent transition-all shadow-2xl"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-gray-500 hover:text-gold transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 py-20 bg-bg-midnight">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {loading ? (
-            <div className="col-span-full flex flex-col items-center justify-center py-20 text-text-on-dark-secondary">
-              <Loader2 className="w-12 h-12 animate-spin mb-4 text-accent-gold-secondary" />
-              <p className="text-lg font-medium">Loading {category || 'resources'}...</p>
+            <div className="col-span-full flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-12 h-12 animate-spin mb-4 text-gold" />
+              <p className="text-gray-400 font-light tracking-widest uppercase text-xs">Loading {category || 'resources'}...</p>
             </div>
           ) : error ? (
-            <div className="col-span-full text-center py-20 bg-red-500/10 backdrop-blur-sm rounded-3xl border border-dashed border-red-500/30">
-              <p className="text-red-400 text-lg font-bold mb-2">Failed to load resources</p>
-              <p className="text-text-on-dark-secondary text-sm font-light max-w-md mx-auto">{error}</p>
-              <p className="text-text-on-dark-muted text-xs mt-4">This usually requires a Firestore composite index to be created.</p>
+            <div className="col-span-full text-center py-20 glass-card border-red-500/20">
+              <p className="text-red-400 text-lg font-bold mb-2">System Error</p>
+              <p className="text-gray-400 text-sm font-light max-w-md mx-auto">{error}</p>
             </div>
-          ) : resources.length > 0 ? (
-            resources.map(resource => (
+          ) : filteredResources.length > 0 ? (
+            filteredResources.map(resource => (
               <div 
                 key={resource.id} 
-                role="button"
-                tabIndex={0}
                 onClick={() => navigate(`/resources/sermons/${resource.slug || resource.id}`)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate(`/resources/sermons/${resource.slug || resource.id}`);
-                  }
-                }}
-                className="bg-bg-dark-secondary/80 backdrop-blur-md border border-border-dark-soft overflow-hidden rounded-3xl group flex flex-col cursor-pointer hover:border-accent-gold-secondary/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.05)] transition-all duration-500 focus:ring-2 focus:ring-accent-gold-secondary outline-none"
+                className="glass-card group flex flex-col cursor-pointer hover:border-gold/30 transition-all duration-500"
               >
-                <div className="h-48 bg-bg-dark-primary flex items-center justify-center relative border-b border-border-dark-soft overflow-hidden">
+                <div className="h-56 bg-black/40 flex items-center justify-center relative overflow-hidden border-b border-white/5">
                   {(resource as any).featuredImage ? (
                     <img 
                       src={(resource as any).featuredImage} 
                       alt={resource.title} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100"
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <>
-                      <div className="absolute inset-0 bg-accent-purple-soft/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="p-12 opacity-40 group-hover:opacity-100 transition-opacity duration-500">
                       {getIcon(resource.icon)}
-                    </>
-                  )}
-                </div>
-                <div className="p-8 flex-grow flex flex-col relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-accent-purple-soft/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                  <span className="text-xs font-bold uppercase text-accent-gold-secondary tracking-wider mb-3 relative z-10">{resource.type}</span>
-                  <h3 className="text-xl font-display font-bold text-text-on-dark-primary mb-3 group-hover:text-accent-gold-secondary transition-colors relative z-10">{resource.title}</h3>
-                  <p className="text-text-on-dark-secondary font-light text-sm leading-relaxed mb-6 flex-grow line-clamp-3 relative z-10">{resource.excerpt || resource.description}</p>
-                  
-                  {(resource.audioUrl || (resource.podcastAudioStatus === 'ready' && resource.podcastAudioUrl)) && (
-                    <div className="mb-6 relative z-10" onClick={(e) => e.stopPropagation()}>
-                      <audio 
-                        controls 
-                        className="w-full h-10 rounded-lg bg-white/5"
-                        src={resource.audioUrl || resource.podcastAudioUrl}
-                      >
-                        Your browser does not support the audio element.
-                      </audio>
                     </div>
                   )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-midnight to-transparent opacity-60"></div>
+                </div>
 
-                  <span className="text-sm font-semibold text-text-on-dark-primary flex items-center group-hover:text-accent-gold-secondary transition-colors relative z-10">
-                    {resource.icon === 'play' ? 'Watch Resource' : resource.icon === 'headphones' ? 'Listen Now' : 'View Gallery'} 
-                    <ArrowRight className="w-4 h-4 ml-2 text-accent-gold-secondary" />
-                  </span>
+                <div className="p-8 flex-grow flex flex-col">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-bold uppercase text-gold tracking-widest">{resource.type}</span>
+                    {(resource.youtubeId || resource.audioEmbedUrl || resource.videoUrl || resource.audioUrl) && (
+                      <span className="flex items-center text-[9px] font-bold uppercase tracking-widest text-white bg-red-600/20 border border-red-600/30 px-2.5 py-1 rounded-full backdrop-blur-sm">
+                        <Video className="w-3 h-3 mr-1.5 text-red-500" />
+                        Media Available
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="text-xl font-display font-bold text-white mb-4 group-hover:text-gold transition-colors duration-300">{resource.title}</h3>
+                  
+                  <div className="flex flex-wrap gap-4 mb-6 text-[11px] text-gray-400 font-medium">
+                    {resource.speaker && (
+                      <span className="flex items-center">
+                        <User className="w-3.5 h-3.5 mr-1.5 text-gold/60" />
+                        {resource.speaker}
+                      </span>
+                    )}
+                    {resource.date && (
+                      <span className="flex items-center">
+                        <Calendar className="w-3.5 h-3.5 mr-1.5 text-gold/60" />
+                        {resource.date}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-gray-400 font-light text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
+                    {resource.excerpt || resource.description}
+                  </p>
+                  
+                  <div className="pt-6 border-t border-white/5 flex items-center text-xs font-bold uppercase tracking-widest text-white group-hover:text-gold transition-colors">
+                    <span>{resource.icon === 'play' ? 'Watch Resource' : resource.icon === 'headphones' ? 'Listen Now' : 'View Details'}</span>
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="col-span-full text-center py-20 bg-bg-dark-secondary/50 backdrop-blur-sm rounded-3xl border border-dashed border-border-dark-soft">
-              <p className="text-text-on-dark-secondary text-lg font-light">No {category || 'resources'} found in this category.</p>
+            <div className="col-span-full text-center py-24 glass-card border-dashed border-white/10">
+              <p className="text-gray-400 text-lg font-light">
+                {searchTerm ? (
+                  <>No results found for "<span className="text-gold font-semibold">{searchTerm}</span>"</>
+                ) : (
+                  `No ${category || 'resources'} found in this category.`
+                )}
+              </p>
+              {searchTerm && (
+                <button 
+                  onClick={() => setSearchTerm('')}
+                  className="mt-8 gold-outline-btn"
+                >
+                  Clear Search
+                </button>
+              )}
             </div>
           )}
         </div>
-      </div>
+      </section>
     </div>
+
   );
 }

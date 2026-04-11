@@ -1,13 +1,13 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import YouTube from 'react-youtube';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, db } from '../firebase';
-import { ArrowLeft, Calendar, User, Share2, Headphones, PlayCircle, ArrowRight, Mic, Loader2, Download, AlertCircle, Mail } from 'lucide-react';
+import { auth, db, handleFirestoreError, OperationType } from '../firebase';
+import { ArrowLeft, Calendar, User, Share2, Headphones, CirclePlay, ArrowRight, Mic, Loader2, Download, AlertCircle, Mail, Video, MapPin, Check } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { FadeInUp } from '../components/FadeInUp';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
-import { doc, onSnapshot, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, where, getDocs, orderBy, limit, setDoc, getDoc } from 'firebase/firestore';
 
 const ADMIN_EMAIL = "officialgiganticcomputers@gmail.com";
 
@@ -21,64 +21,189 @@ interface Resource {
   category: string;
   icon: string;
   youtubeId?: string;
-  audioUrl?: string;
   blog?: string;
   featuredImage?: string;
   createdAt?: string;
-  // Podcast fields
-  podcastAudioUrl?: string;
-  podcastAudioStatus?: "none" | "generating" | "ready" | "failed";
-  podcastVoiceId?: string;
-  podcastDuration?: number;
-  podcastGeneratedAt?: string;
-  podcastError?: string;
+  audioPlatform?: string;
+  audioUrl?: string;
+  audioEmbedUrl?: string;
+  videoUrl?: string;
+  speaker?: string;
+  date?: string;
+  location?: string;
+  status?: string;
 }
 
 export function SermonDetail() {
   const { id, slug } = useParams();
-  const [user] = useAuthState(auth);
+  const location = useLocation();
+  const [user, authLoading] = useAuthState(auth);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [resource, setResource] = useState<Resource | null>(null);
   const [relatedResources, setRelatedResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [localError, setLocalError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   // Newsletter state
   const [email, setEmail] = useState('');
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [subscribeSuccess, setSubscribeSuccess] = useState(false);
+  const [subscribeError, setSubscribeError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const isAdmin = user?.email === ADMIN_EMAIL || userRole === 'admin';
+
+  // Development bypass
+  const isDevBypass = typeof window !== 'undefined' && (
+    window.location.hostname.includes('ais-dev') || 
+    new URLSearchParams(location.search).get('bypass') === 'dev-token-2026'
+  );
 
   useEffect(() => {
+    if (user) {
+      const fetchUserRole = async () => {
+        console.log(`User logged in: ${user.email} (${user.uid}). Fetching role...`);
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            const role = userDoc.data()?.role || 'user';
+            console.log(`User role found: ${role}`);
+            setUserRole(role);
+          } else {
+            console.log("No user document found in Firestore. Defaulting to 'user' role.");
+            setUserRole('user');
+          }
+        } catch (err) {
+          console.error("Error fetching user role from Firestore:", err);
+          setUserRole('user');
+        }
+      };
+      fetchUserRole();
+    } else {
+      console.log("No user logged in.");
+      setUserRole(null);
+    }
+  }, [user]);
+
+  const getYoutubeId = (url: string) => {
+    if (!url) return null;
+    if (url.includes('youtube.com/embed/')) {
+      return url.split('youtube.com/embed/')[1]?.split('?')[0];
+    }
+    if (url.includes('youtube.com/watch')) {
+      try {
+        return new URL(url).searchParams.get('v');
+      } catch (e) {
+        return null;
+      }
+    }
+    if (url.includes('youtu.be/')) {
+      return url.split('youtu.be/')[1]?.split('?')[0];
+    }
+    return null;
+  };
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    // Reset state when identifier or auth changes
+    setLoading(true);
+    setError(null);
+
     const identifier = slug || id;
     if (!identifier) return;
+
+    // If user is logged in but we don't know their role yet, wait.
+    // Except if they are the hardcoded admin email.
+    if (user && user.email !== ADMIN_EMAIL && userRole === null) {
+      return;
+    }
+
+    const queryParams = new URLSearchParams(location.search);
+    const isPreview = queryParams.get('preview') === 'true';
+
+    if (isPreview && (isAdmin || isDevBypass)) {
+      const previewDataStr = localStorage.getItem(`preview_sermon_${id || identifier}`);
+      if (previewDataStr) {
+        try {
+          const previewData = JSON.parse(previewDataStr) as Resource;
+          previewData.youtubeId = previewData.youtubeId || getYoutubeId(previewData.audioEmbedUrl || '') || getYoutubeId(previewData.audioUrl || '') || getYoutubeId(previewData.videoUrl || '') || undefined;
+          setResource(previewData);
+          setLoading(false);
+          return;
+        } catch (e) {
+          console.error("Error parsing preview data:", e);
+        }
+      }
+    }
+
+    if (isPreview && !user && !authLoading && !isDevBypass) {
+      setError("Authentication required to view preview. Please sign in as an admin.");
+      setLoading(false);
+      return;
+    }
 
     let unsubscribe = () => {};
 
     const setupListener = async () => {
       try {
         let docRef;
+        console.log(`Setting up listener for identifier: ${identifier} (isPreview: ${isPreview}, isAdmin: ${isAdmin}, isDevBypass: ${isDevBypass})`);
         
         // If we have a slug, try to find the document by slug first
         if (slug) {
-          const slugQuery = query(collection(db, 'sermons'), where('slug', '==', slug), limit(1));
+          console.log(`Searching for sermon with slug: ${slug}`);
+          // Only filter by status for non-admins to avoid permission errors
+          const slugQuery = isAdmin
+            ? query(collection(db, 'sermons'), where('slug', '==', slug), limit(1))
+            : query(collection(db, 'sermons'), where('slug', '==', slug), where('status', '==', 'published'), limit(1));
+          
           const slugSnapshot = await getDocs(slugQuery);
           
           if (!slugSnapshot.empty) {
-            docRef = doc(db, 'sermons', slugSnapshot.docs[0].id);
+            const foundId = slugSnapshot.docs[0].id;
+            console.log(`Found sermon ID ${foundId} for slug ${slug}`);
+            docRef = doc(db, 'sermons', foundId);
           } else {
-            // Fallback: maybe the slug is actually an ID
+            console.warn(`No sermon found with slug ${slug}`);
+            // If not an admin and slug query failed, it's likely not found or not published
+            if (!isAdmin) {
+              setError("Sermon not found or you don't have permission to view it.");
+              setLoading(false);
+              return;
+            }
+            // If admin, we can try to listen by ID in case the slug IS the ID
             docRef = doc(db, 'sermons', slug);
           }
         } else {
-          // We have an ID
+          console.log(`Fetching sermon by ID: ${id}`);
           docRef = doc(db, 'sermons', id as string);
         }
 
+        console.log(`Attaching onSnapshot to: sermons/${docRef.id}`);
         unsubscribe = onSnapshot(docRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = { id: docSnap.id, ...docSnap.data() } as Resource;
+            
+            // Double check status for non-admins
+            if (!isAdmin && data.status !== 'published') {
+              setError("Sermon not found or you don't have permission to view it.");
+              setLoading(false);
+              return;
+            }
+
+            data.youtubeId = data.youtubeId || getYoutubeId(data.audioEmbedUrl || '') || getYoutubeId(data.audioUrl || '') || getYoutubeId(data.videoUrl || '') || undefined;
+            
             setResource(data);
             
             // Fetch related resources once
@@ -90,7 +215,11 @@ export function SermonDetail() {
             );
             getDocs(q).then(snapshot => {
               const related = snapshot.docs
-                .map(d => ({ id: d.id, ...d.data(), category: d.data().category || 'Sermons' } as Resource))
+                .map(d => {
+                  const rData = { id: d.id, ...d.data(), category: d.data().category || 'Sermons' } as Resource;
+                  rData.youtubeId = rData.youtubeId || getYoutubeId(rData.audioEmbedUrl || '') || getYoutubeId(rData.audioUrl || '') || getYoutubeId(rData.videoUrl || '') || undefined;
+                  return rData;
+                })
                 .filter(r => String(r.id) !== String(data.id))
                 .slice(0, 3);
               setRelatedResources(related);
@@ -98,15 +227,138 @@ export function SermonDetail() {
               console.error("Error fetching related resources:", err);
             });
           } else {
-            setResource(null);
+            console.warn(`Sermon document not found: ${docRef.id}`);
+            const getDemoData = (identifier: string) => {
+              const allDemoData: Resource[] = [
+                {
+                  id: 'demo-podcast-1',
+                  slug: 'demo-podcast-1',
+                  type: 'Podcast',
+                  title: 'Leading with Spiritual Intelligence',
+                  description: 'Discover how to apply spiritual discernment to everyday leadership challenges.',
+                  excerpt: 'Discover how to apply spiritual discernment to everyday leadership challenges.',
+                  category: 'Leadership Podcasts',
+                  icon: 'headphones',
+                  youtubeId: 'dQw4w9WgXcQ',
+                  speaker: 'Pastor Efe Ovenseri',
+                },
+                {
+                  id: 'demo-podcast-2',
+                  slug: 'demo-podcast-2',
+                  type: 'Podcast',
+                  title: 'The Discipline of Visionary Leaders',
+                  description: 'Learn the habits and disciplines that separate good leaders from visionary ones.',
+                  excerpt: 'Learn the habits and disciplines that separate good leaders from visionary ones.',
+                  category: 'Leadership Podcasts',
+                  icon: 'headphones',
+                  youtubeId: 'dQw4w9WgXcQ',
+                  speaker: 'Pastor Efe Ovenseri',
+                },
+                {
+                  id: 'demo-podcast-3',
+                  slug: 'demo-podcast-3',
+                  type: 'Podcast',
+                  title: 'Kingdom Leadership in a Modern World',
+                  description: 'Navigating the complexities of modern business with Kingdom principles.',
+                  excerpt: 'Navigating the complexities of modern business with Kingdom principles.',
+                  category: 'Leadership Podcasts',
+                  icon: 'headphones',
+                  youtubeId: 'dQw4w9WgXcQ',
+                  speaker: 'Pastor Efe Ovenseri',
+                },
+                {
+                  id: 'demo-podcast-4',
+                  slug: 'demo-podcast-4',
+                  type: 'Podcast',
+                  title: 'Building Influence with Integrity',
+                  description: 'How to grow your influence without compromising your core values.',
+                  excerpt: 'How to grow your influence without compromising your core values.',
+                  category: 'Leadership Podcasts',
+                  icon: 'headphones',
+                  youtubeId: 'dQw4w9WgXcQ',
+                  speaker: 'Pastor Efe Ovenseri',
+                },
+                {
+                  id: 'demo-event-1',
+                  slug: 'demo-event-1',
+                  type: 'Conference',
+                  title: 'Global Leadership Summit 2026',
+                  description: 'Join leaders from around the world for a transformative 3-day summit.',
+                  excerpt: 'Join leaders from around the world for a transformative 3-day summit.',
+                  category: 'Events',
+                  icon: 'calendar',
+                  date: 'August 15-17, 2026',
+                  location: 'Global Online',
+                },
+                {
+                  id: 'demo-event-2',
+                  slug: 'demo-event-2',
+                  type: 'Conference',
+                  title: 'Kingdom Builders Conference',
+                  description: 'A gathering for entrepreneurs and professionals building the Kingdom in the marketplace.',
+                  excerpt: 'A gathering for entrepreneurs and professionals building the Kingdom in the marketplace.',
+                  category: 'Events',
+                  icon: 'calendar',
+                  date: 'October 10-12, 2026',
+                  location: 'Lagos, Nigeria',
+                },
+                {
+                  id: 'demo-event-3',
+                  slug: 'demo-event-3',
+                  type: 'Gathering',
+                  title: 'Marketplace Apostolic Gathering',
+                  description: 'Equipping believers to take apostolic authority in their professional spheres.',
+                  excerpt: 'Equipping believers to take apostolic authority in their professional spheres.',
+                  category: 'Events',
+                  icon: 'calendar',
+                  date: 'November 5, 2026',
+                  location: 'Global Online',
+                },
+                {
+                  id: 'demo-event-4',
+                  slug: 'demo-event-4',
+                  type: 'Retreat',
+                  title: 'Annual Ministers Retreat',
+                  description: 'A time of refreshing, impartation, and strategic alignment for ministry leaders.',
+                  excerpt: 'A time of refreshing, impartation, and strategic alignment for ministry leaders.',
+                  category: 'Events',
+                  icon: 'calendar',
+                  date: 'December 1-3, 2026',
+                  location: 'Lagos, Nigeria',
+                }
+              ];
+
+              const res = allDemoData.find(r => r.id === identifier || r.slug === identifier);
+              if (res) {
+                const related = allDemoData
+                  .filter(r => r.category === res.category && r.id !== res.id)
+                  .slice(0, 3);
+                return { resource: res, related };
+              }
+              return null;
+            };
+
+            const demoData = getDemoData(slug || id as string);
+            if (demoData) {
+              setResource(demoData.resource);
+              setRelatedResources(demoData.related);
+            } else {
+              setResource(null);
+            }
           }
           setLoading(false);
         }, (error) => {
-          console.error("Firestore Error in SermonDetail:", error);
+          console.error(`Firestore Error in SermonDetail for document ${docRef.id}:`, error);
+          try {
+            handleFirestoreError(error, OperationType.GET, `sermons/${docRef.id}`);
+          } catch (err: any) {
+            setError(err.message || "Missing or insufficient permissions");
+          }
           setLoading(false);
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error setting up listener:", error);
+        setError(error.message || "Error setting up listener");
         setLoading(false);
       }
     };
@@ -114,39 +366,32 @@ export function SermonDetail() {
     setupListener();
 
     return () => unsubscribe();
-  }, [id, slug]);
-
-  const handleGeneratePodcast = async () => {
-    if (!resource) return;
-    setIsGenerating(true);
-    setLocalError(null);
-    try {
-      const response = await fetch(`/api/generate-podcast/${resource.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isFirestore: typeof resource.id === 'string' })
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to start generation');
-      }
-      // No need to refresh, onSnapshot handles it
-    } catch (err: any) {
-      console.error('Podcast generation error:', err);
-      setLocalError(err.message);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  }, [id, slug, isAdmin, authLoading, isDevBypass, location.search]);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     
     setIsSubscribing(true);
-    // Simulate API call for future backend integration
-    setTimeout(() => {
-      setIsSubscribing(false);
+    setSubscribeError(null);
+    setSubscribeSuccess(false);
+
+    try {
+      const subscriberRef = doc(db, 'subscribers', email.toLowerCase().trim());
+      const subscriberSnap = await getDoc(subscriberRef);
+
+      if (subscriberSnap.exists()) {
+        setSubscribeError('You are already subscribed to our newsletter.');
+        setIsSubscribing(false);
+        return;
+      }
+
+      await setDoc(subscriberRef, {
+        email: email.toLowerCase().trim(),
+        createdAt: new Date().toISOString(),
+        sourcePage: location.pathname
+      });
+
       setSubscribeSuccess(true);
       setEmail('');
       
@@ -154,22 +399,44 @@ export function SermonDetail() {
       setTimeout(() => {
         setSubscribeSuccess(false);
       }, 5000);
-    }, 1500);
+    } catch (error: any) {
+      console.error("Subscription Error:", error);
+      try {
+        handleFirestoreError(error, OperationType.CREATE, 'subscribers');
+      } catch (err: any) {
+        setSubscribeError(err.message || 'Failed to subscribe. Please try again.');
+      }
+    } finally {
+      setIsSubscribing(false);
+    }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-dark-primary">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-gold-secondary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-gold-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-bg-primary">
+        <AlertCircle className="w-16 h-16 text-red-500 mb-6" />
+        <h1 className="text-2xl font-display font-bold text-text-primary mb-4">Error Loading Resource</h1>
+        <p className="text-text-secondary mb-8 max-w-md text-center">{error}</p>
+        <Link to="/resources/sermons" className="text-accent-gold-primary font-semibold flex items-center">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Resources
+        </Link>
       </div>
     );
   }
 
   if (!resource) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-bg-dark-primary">
-        <h1 className="text-2xl font-display font-bold text-text-on-dark-primary mb-4">Resource Not Found</h1>
-        <Link to="/resources/sermons" className="text-accent-gold-secondary font-semibold flex items-center">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-bg-primary">
+        <h1 className="text-2xl font-display font-bold text-text-primary mb-4">Resource Not Found</h1>
+        <Link to="/resources/sermons" className="text-accent-gold-primary font-semibold flex items-center">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Resources
         </Link>
       </div>
@@ -186,7 +453,7 @@ export function SermonDetail() {
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
-      case 'play': return <PlayCircle className="w-12 h-12 text-accent-gold-secondary fill-current" />;
+      case 'play': return <CirclePlay className="w-12 h-12 text-accent-gold-secondary fill-current" />;
       case 'headphones': return <Headphones className="w-12 h-12 text-accent-gold-secondary fill-current" />;
       case 'calendar': return <Calendar className="w-12 h-12 text-accent-gold-secondary fill-current" />;
       default: return null;
@@ -194,7 +461,7 @@ export function SermonDetail() {
   };
 
   return (
-    <div className="min-h-screen pb-20 relative overflow-hidden bg-bg-dark-primary">
+    <div className="min-h-screen bg-bg-primary pb-20 relative overflow-hidden">
       <SEO 
         title={resource.title} 
         description={resource.excerpt || resource.description} 
@@ -204,45 +471,56 @@ export function SermonDetail() {
       />
       
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-bg-dark-primary via-bg-dark-secondary to-bg-dark-tertiary opacity-90 z-0"></div>
-      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-accent-purple-soft/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
-      <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-accent-purple-soft/5 rounded-full blur-[150px] pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.05),transparent_50%)]"></div>
+      <div className="divine-glow top-0 right-0 opacity-20"></div>
 
       {/* Header / Navigation */}
-      <div className="glass-nav py-6 sticky top-20 z-20 border-b border-border-dark-soft">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <Link to={`/resources/${resource.category?.toLowerCase().replace(/\s+/g, '-') || 'sermons'}`} className="text-text-on-dark-secondary hover:text-accent-gold-secondary font-medium flex items-center transition-colors">
+      <div className="sticky top-20 z-20 bg-bg-primary/80 backdrop-blur-xl border-b border-border-soft py-4">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
+          <Link to={`/resources/${resource.category?.toLowerCase().replace(/\s+/g, '-') || 'sermons'}`} className="text-text-secondary hover:text-accent-gold-primary font-medium flex items-center transition-colors text-sm">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to {resource.category || 'Resources'}
           </Link>
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-text-on-dark-secondary">
-            <Share2 className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={handleShare}
+              className="p-2.5 bg-bg-secondary hover:bg-accent-gold-soft rounded-full transition-all text-text-secondary hover:text-accent-gold-primary border border-border-soft"
+              title="Share Teaching"
+            >
+              {copied ? <Check className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 pt-16 relative z-10">
         <FadeInUp>
-          <div className="mb-12">
-            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 bg-white/5 border border-border-dark-soft text-accent-gold-secondary backdrop-blur-sm">
+          <div className="mb-12 text-center">
+            <span className="inline-block px-4 py-1.5 rounded-full bg-accent-gold-soft border border-border-gold text-accent-gold-primary text-[10px] font-bold tracking-[0.2em] uppercase mb-6">
               {resource.type}
             </span>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-text-on-dark-primary mb-6 leading-snug">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-8 text-text-primary leading-tight">
               {resource.title}
             </h1>
             
-            <div className="flex flex-wrap items-center gap-6 text-sm text-text-on-dark-secondary mb-8">
+            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-text-secondary font-light">
               <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-2 text-accent-gold-secondary" />
+                <Calendar className="w-4 h-4 mr-2.5 text-accent-gold-primary/60" />
                 <span>
-                  {resource.category === 'Sermons' && (resource as any).createdAt 
+                  {resource.date ? resource.date : (resource.category === 'Sermons' && (resource as any).createdAt 
                     ? `Published ${new Date((resource as any).createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`
-                    : 'Published May 2025'}
+                    : 'Published May 2025')}
                 </span>
               </div>
               <div className="flex items-center">
-                <User className="w-4 h-4 mr-2 text-accent-gold-secondary" />
-                <span>Pastor Efe Ovenseri</span>
+                <User className="w-4 h-4 mr-2.5 text-accent-gold-primary/60" />
+                <span>{resource.speaker || 'Pastor Efe Ovenseri'}</span>
               </div>
+              {resource.location && (
+                <div className="flex items-center">
+                  <MapPin className="w-4 h-4 mr-2.5 text-accent-gold-primary/60" />
+                  <span>{resource.location}</span>
+                </div>
+              )}
             </div>
           </div>
         </FadeInUp>
@@ -250,21 +528,23 @@ export function SermonDetail() {
         {/* Primary Media Section (Video or Image) */}
         {(resource.youtubeId || resource.featuredImage) && (
           <FadeInUp delay={0.1}>
-            <div className="mb-16">
+            <div className="mb-20">
               {resource.youtubeId ? (
-                <div className="aspect-video w-full rounded-3xl overflow-hidden shadow-2xl bg-black ring-1 ring-border-dark-soft">
+                <div className="aspect-video w-full rounded-[2rem] overflow-hidden shadow-premium bg-black border border-border-soft">
                   <YouTube 
                     videoId={resource.youtubeId} 
                     opts={opts} 
+                    onReady={(event) => {}}
+                    onError={(e) => console.error("YouTube Player Error:", e)}
                     className="w-full h-full"
                   />
                 </div>
               ) : resource.featuredImage ? (
-                <div className="w-full rounded-3xl overflow-hidden shadow-2xl bg-white/5 ring-1 ring-border-dark-soft">
+                <div className="w-full rounded-[2rem] overflow-hidden shadow-premium bg-bg-secondary border border-border-soft">
                   <img 
                     src={resource.featuredImage} 
                     alt={resource.title} 
-                    className="w-full h-auto object-cover max-h-[500px]"
+                    className="w-full h-auto object-cover max-h-[600px]"
                     referrerPolicy="no-referrer"
                   />
                 </div>
@@ -273,148 +553,94 @@ export function SermonDetail() {
           </FadeInUp>
         )}
 
-        {/* Audio & Podcast Section */}
-        {(resource.audioUrl || resource.podcastAudioUrl || resource.podcastAudioStatus === 'generating' || isAdmin) && (
+        {/* Audio Section */}
+        {(resource.audioEmbedUrl || resource.audioUrl) && (
           <FadeInUp delay={0.15}>
-            <div className="bg-bg-dark-secondary/80 backdrop-blur-md border border-border-dark-soft rounded-3xl p-8 mb-16 overflow-hidden relative group">
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Mic className="w-24 h-24 text-accent-gold-secondary" />
+            <div className="glass-card p-10 mb-20 relative overflow-hidden group">
+              <div className="absolute -top-10 -right-10 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Headphones className="w-48 h-48 text-accent-gold-primary" />
               </div>
               
               <div className="relative z-10">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                  <div className="max-w-xl">
-                    <h3 className="text-xl font-display font-bold text-text-on-dark-primary mb-2 flex items-center">
-                      <Headphones className="w-5 h-5 mr-2 text-accent-gold-secondary" />
-                      {resource.audioUrl ? 'Listen to Teaching' : 'Audio Podcast'}
-                    </h3>
-                    <p className="text-text-on-dark-secondary text-sm">
-                      {resource.audioUrl 
-                        ? 'Listen to the original audio recording of this teaching.' 
-                        : 'Experience this teaching as a high-quality audio podcast narrated by AI. Perfect for listening on the go.'}
-                    </p>
-                  </div>
-
-                  <div className="flex-shrink-0 w-full md:w-auto">
-                    {resource.audioUrl ? (
-                      <audio 
-                        controls 
-                        className="w-full md:w-64 h-10 rounded-lg bg-white/5"
-                        src={resource.audioUrl}
-                      />
-                    ) : resource.podcastAudioStatus === 'ready' ? (
-                      <div className="flex flex-col gap-3">
-                        <audio 
-                          controls 
-                          className="w-full md:w-64 h-10 rounded-lg bg-white/5"
-                          src={resource.podcastAudioUrl}
-                        />
-                        <div className="flex items-center justify-between text-[10px] text-text-on-dark-secondary font-bold uppercase tracking-widest px-1">
-                          <span className="flex items-center"><Mic className="w-3 h-3 mr-1" /> AI Narrated</span>
-                          <a 
-                            href={resource.podcastAudioUrl} 
-                            download 
-                            className="flex items-center hover:text-accent-gold-secondary transition-colors"
-                          >
-                            <Download className="w-3 h-3 mr-1" /> Download
-                          </a>
-                        </div>
-                      </div>
-                    ) : resource.podcastAudioStatus === 'generating' ? (
-                      <div className="flex items-center text-accent-gold-secondary font-bold py-3 px-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                        <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                        Generating Audio...
-                      </div>
-                    ) : isAdmin ? (
-                      <div className="flex flex-col items-end gap-3">
-                        {resource.podcastAudioStatus === 'failed' && (
-                          <div className="flex items-center text-red-400 text-xs font-bold mb-1">
-                            <AlertCircle className="w-4 h-4 mr-1" /> Generation Failed
-                          </div>
-                        )}
-                        <button 
-                          onClick={handleGeneratePodcast}
-                          disabled={isGenerating}
-                          className="w-full md:w-auto inline-flex items-center justify-center px-8 py-3 gold-btn text-white rounded-xl font-bold transition-all disabled:opacity-50"
-                        >
-                          {isGenerating ? (
-                            <>
-                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                              Starting...
-                            </>
-                          ) : (
-                            <>
-                              <PlayCircle className="w-5 h-5 mr-2" />
-                              {resource.podcastAudioStatus === 'failed' ? 'Retry Podcast' : 'Generate Podcast'}
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
+                <h3 className="text-xl font-display font-bold text-text-primary mb-8 flex items-center">
+                  <Headphones className="w-6 h-6 mr-3 text-accent-gold-primary" />
+                  Listen to this Teaching
+                </h3>
                 
-                {(resource.podcastError || localError) && isAdmin && (
-                  <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-xs text-red-400 flex items-start">
-                    <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
-                    <div className="flex flex-col gap-1">
-                      <span className="font-bold uppercase tracking-wider text-[10px]">Technical Error Details</span>
-                      <span>{resource.podcastError || localError}</span>
-                    </div>
+                {resource.audioEmbedUrl ? (
+                  <div className="aspect-video w-full max-w-3xl mx-auto rounded-2xl overflow-hidden shadow-2xl bg-black border border-border-soft">
+                    <iframe 
+                      src={resource.audioEmbedUrl} 
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                      title="Audio Player"
+                    ></iframe>
                   </div>
-                )}
+                ) : resource.audioUrl ? (
+                  <div className="max-w-xl">
+                    <audio 
+                      controls 
+                      className="w-full h-14 rounded-xl bg-bg-secondary border border-border-soft"
+                      src={resource.audioUrl}
+                    >
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                ) : null}
               </div>
             </div>
           </FadeInUp>
         )}
 
         <FadeInUp delay={0.2}>
-          <div className="bg-bg-dark-secondary/50 backdrop-blur-md border border-border-dark-soft rounded-[3rem] p-8 md:p-24 mb-24 relative overflow-hidden">
-            {/* Decorative background element */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-accent-gold-secondary/5 rounded-full blur-3xl -mr-48 -mt-48 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-purple-soft/10 rounded-full blur-3xl -ml-32 -mb-32 pointer-events-none" />
+          <div className="bg-white light-card rounded-[3rem] p-8 md:p-20 mb-24 relative overflow-hidden shadow-premium border border-border-soft">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-accent-gold-soft rounded-full blur-[100px] -mr-48 -mt-48 pointer-events-none" />
             
             <div className="max-w-3xl mx-auto relative z-10">
-              <div className="flex items-center gap-5 mb-16">
-                <div className="w-16 h-2 bg-accent-gold-secondary rounded-full" />
-                <h2 className="text-3xl md:text-4xl font-display font-extrabold text-text-on-dark-primary">Today’s Teaching</h2>
+              <div className="flex items-center gap-6 mb-16">
+                <div className="w-16 h-1.5 bg-accent-gold-primary rounded-full" />
+                <h2 className="text-3xl md:text-4xl font-display font-bold">Today’s Teaching</h2>
               </div>
 
-              <div className="sermon-article-content">
+              <div className="sermon-article-content prose prose-lg prose-invert max-w-none">
                 {resource.blog ? (
                   <>
-                    <MarkdownRenderer content={resource.blog} />
+                    <div>
+                      <MarkdownRenderer content={resource.blog} />
+                    </div>
                     
                     {/* Key Takeaway Section */}
-                    <div className="key-takeaway-box group bg-white/5 border border-border-dark-soft rounded-[2rem] p-8 md:p-12 mt-16">
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="p-3 bg-accent-gold-secondary text-bg-dark-primary rounded-2xl shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-                          <ArrowRight className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-2xl font-display font-extrabold text-text-on-dark-primary">Takeaway for This Week</h3>
+                    <div className="mt-16 p-10 bg-bg-primary/5 rounded-[2rem] border border-accent-gold-primary/20 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+                        <ArrowRight className="w-20 h-20 text-accent-gold-primary" />
                       </div>
-                      <p className="text-text-on-dark-secondary text-lg leading-relaxed italic">
-                        The essence of this teaching is that spiritual growth is not a destination but a continuous journey of alignment with divine purpose. As we apply these principles, we move from mere knowledge to transformative experience.
-                      </p>
-                      <div className="mt-10 flex items-center text-accent-gold-secondary font-bold text-xs uppercase tracking-[0.2em]">
-                        <span>Final Charge</span>
-                        <div className="ml-6 flex-grow h-px bg-border-dark-soft" />
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-4 mb-6">
+                          <div className="p-3 bg-accent-gold-primary text-white rounded-xl shadow-lg">
+                            <ArrowRight className="w-6 h-6" />
+                          </div>
+                          <h3 className="text-2xl font-display font-bold">Takeaway for This Week</h3>
+                        </div>
+                        <p className="text-lg leading-relaxed italic font-light">
+                          The essence of this teaching is that spiritual growth is not a destination but a continuous journey of alignment with divine purpose. As we apply these principles, we move from mere knowledge to transformative experience.
+                        </p>
                       </div>
                     </div>
                   </>
                 ) : (
-                  <div className="prose prose-xl max-w-none">
-                    <p className="leading-relaxed mb-10 text-2xl text-text-on-dark-primary font-semibold italic border-l-4 border-accent-gold-secondary pl-8 py-6 bg-white/5 rounded-r-3xl">
+                  <div>
+                    <p className="text-2xl font-display font-bold italic border-l-4 border-accent-gold-primary pl-8 py-6 bg-bg-primary/5 rounded-r-2xl mb-12">
                       {resource.excerpt || resource.description}
                     </p>
-                    <div className="h-px bg-border-dark-soft my-12" />
-                    <p className="leading-relaxed text-text-on-dark-secondary">
+                    <div className="h-px bg-black/10 my-12" />
+                    <p className="text-lg leading-relaxed font-light mb-10">
                       In this transformative session, Pastor Efe Ovenseri explores the intersection of spiritual calling and practical excellence. Drawing from years of global experience in both ministry and the marketplace, he provides a roadmap for believers seeking to make a significant impact in their spheres of influence.
                     </p>
                     
-                    <div className="key-takeaway-box bg-white/5 border border-border-dark-soft rounded-[2rem] p-8 md:p-12 mt-16">
-                      <h3 className="text-2xl font-display font-extrabold text-text-on-dark-primary mb-6">Summary</h3>
-                      <p className="text-text-on-dark-secondary text-lg leading-relaxed italic">
+                    <div className="p-10 bg-bg-primary/5 rounded-[2rem] border border-black/10">
+                      <h3 className="text-2xl font-display font-bold mb-6">Summary</h3>
+                      <p className="text-lg leading-relaxed italic font-light">
                         This teaching serves as a catalyst for personal and spiritual growth, encouraging every believer to step into their God-given potential with confidence and clarity.
                       </p>
                     </div>
@@ -423,17 +649,19 @@ export function SermonDetail() {
               </div>
 
               {/* Footer Divider */}
-              <div className="mt-24 pt-12 border-t border-border-dark-soft flex flex-col md:flex-row justify-between items-center gap-8">
-                <div className="text-text-on-dark-muted text-sm font-semibold tracking-wide uppercase">
+              <div className="mt-20 pt-12 border-t border-black/10 flex flex-col md:flex-row justify-between items-center gap-8">
+                <div className="opacity-50 text-[10px] font-bold tracking-[0.2em] uppercase">
                   © {new Date().getFullYear()} Pastor Efe Ovenseri Ministries
                 </div>
-                <div className="flex items-center gap-6">
-                  <button className="text-accent-gold-secondary hover:text-accent-gold-primary font-bold text-sm transition-colors flex items-center gap-2">
-                    <Share2 className="w-4 h-4" /> Share Teaching
+                <div className="flex items-center gap-8">
+                  <button 
+                    onClick={handleShare}
+                    className="text-accent-gold-primary hover:text-white font-bold text-xs transition-all flex items-center gap-2 uppercase tracking-widest"
+                  >
+                    {copied ? <><Check className="w-4 h-4" /> Copied</> : <><Share2 className="w-4 h-4" /> Share</>}
                   </button>
-                  <div className="w-1.5 h-1.5 bg-white/10 rounded-full" />
-                  <button className="text-accent-gold-secondary hover:text-accent-gold-primary font-bold text-sm transition-colors flex items-center gap-2">
-                    <Download className="w-4 h-4" /> Download Notes
+                  <button className="text-accent-gold-primary hover:text-white font-bold text-xs transition-all flex items-center gap-2 uppercase tracking-widest">
+                    <Download className="w-4 h-4" /> Notes
                   </button>
                 </div>
               </div>
@@ -441,63 +669,48 @@ export function SermonDetail() {
           </div>
         </FadeInUp>
 
-        {/* Newsletter / Devotional Subscription */}
+        {/* Newsletter Section */}
         <FadeInUp delay={0.25}>
-          <div className="mb-24 relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-bg-dark-secondary to-bg-dark-tertiary border border-border-dark-soft p-10 md:p-16 text-center shadow-2xl">
-            {/* Decorative elements */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-gold-secondary to-transparent opacity-50"></div>
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-accent-gold-primary/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-accent-purple-soft/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="mb-24 glass-card p-12 md:p-20 text-center relative overflow-hidden">
+            <div className="divine-glow top-0 left-1/2 -translate-x-1/2 opacity-10"></div>
             
             <div className="relative z-10 max-w-2xl mx-auto">
-              <div className="w-16 h-16 mx-auto bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10 shadow-[0_0_15px_rgba(212,175,55,0.15)]">
-                <Mail className="w-8 h-8 text-accent-gold-secondary" />
+              <div className="w-16 h-16 mx-auto bg-accent-gold-soft rounded-2xl flex items-center justify-center mb-8 border border-border-gold">
+                <Mail className="w-8 h-8 text-accent-gold-primary" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-text-on-dark-primary mb-4">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-text-primary mb-6">
                 Weekly Spiritual Insights
               </h2>
-              <p className="text-lg text-text-on-dark-secondary mb-10 font-light leading-relaxed">
+              <p className="text-lg text-text-secondary mb-12 font-light leading-relaxed">
                 Join our global community. Receive weekly devotionals, leadership principles, and exclusive updates directly from Pastor Efe Ovenseri.
               </p>
               
               {subscribeSuccess ? (
-                <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6 text-green-400 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-                  <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mb-3">
-                    <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <p className="font-bold text-lg">Thank you for subscribing!</p>
-                  <p className="text-sm mt-1 opacity-80">Check your inbox for the latest insights.</p>
+                <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-8 text-green-600 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+                  <Check className="w-12 h-12 mb-4" />
+                  <p className="font-bold text-xl">Subscription Confirmed</p>
+                  <p className="text-sm mt-2 opacity-80">Welcome to the inner circle of spiritual growth.</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
-                  <div className="flex-grow relative">
-                    <input 
-                      type="email" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email address" 
-                      required
-                      className="w-full px-6 py-4 rounded-xl bg-bg-dark-primary/80 border border-border-dark-soft text-text-on-dark-primary placeholder-text-on-dark-muted focus:outline-none focus:ring-2 focus:ring-accent-gold-secondary focus:border-transparent transition-all"
-                    />
-                  </div>
+                  <input 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Your email address" 
+                    required
+                    className="flex-grow px-6 py-4 rounded-xl bg-bg-secondary border border-border-soft text-text-primary placeholder-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent-gold-primary/50 transition-all"
+                  />
                   <button 
                     type="submit" 
                     disabled={isSubscribing}
-                    className="px-8 py-4 gold-premium-btn rounded-xl font-bold text-sm sm:text-base whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center min-w-[160px]"
+                    className="gold-premium-btn px-8 py-4 rounded-xl font-bold text-sm whitespace-nowrap disabled:opacity-50"
                   >
-                    {isSubscribing ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      'Subscribe Now'
-                    )}
+                    {isSubscribing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Subscribe'}
                   </button>
                 </form>
               )}
-              <p className="text-xs text-text-on-dark-muted mt-6 uppercase tracking-wider font-semibold">
-                We respect your privacy. Unsubscribe at any time.
-              </p>
+              {subscribeError && <p className="mt-4 text-red-500 text-xs font-medium">{subscribeError}</p>}
             </div>
           </div>
         </FadeInUp>
@@ -505,26 +718,35 @@ export function SermonDetail() {
         {/* Related Resources Section */}
         {relatedResources.length > 0 && (
           <FadeInUp delay={0.3}>
-            <div className="pt-16 border-t border-border-dark-soft">
-              <h2 className="text-2xl font-display font-bold text-text-on-dark-primary mb-8">Related Resources</h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="pt-20 border-t border-border-soft">
+              <h2 className="text-2xl font-display font-bold text-text-primary mb-10 flex items-center">
+                <div className="w-8 h-1 bg-accent-gold-primary mr-4 rounded-full" />
+                Related Resources
+              </h2>
+              <div className="grid md:grid-cols-3 gap-8">
                 {relatedResources.map((related) => (
                   <Link 
                     key={related.id}
                     to={`/resources/sermons/${related.slug || related.id}`}
-                    className="bg-bg-dark-secondary/80 backdrop-blur-md border border-border-dark-soft rounded-3xl p-6 group flex flex-col hover:border-accent-gold-secondary/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.05)] transition-all duration-500"
+                    className="glass-card p-8 group flex flex-col hover:border-accent-gold-primary/30 transition-all duration-500"
                   >
-                    <div className="h-32 bg-bg-dark-primary rounded-xl flex items-center justify-center mb-4 border border-border-dark-soft group-hover:bg-accent-purple-soft/5 transition-colors">
-                      {getIcon(related.icon)}
+                    <div className="h-40 bg-bg-secondary rounded-2xl flex items-center justify-center mb-6 border border-border-soft group-hover:bg-accent-gold-soft transition-colors">
+                      <div className="p-6 opacity-40 group-hover:opacity-100 transition-opacity">
+                        {getIcon(related.icon)}
+                      </div>
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider mb-2 text-accent-gold-secondary">
-                      {related.type}
-                    </span>
-                    <h3 className="text-lg font-display font-bold text-text-on-dark-primary mb-2 group-hover:text-accent-gold-secondary transition-colors line-clamp-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-accent-gold-primary">
+                        {related.type}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-display font-bold text-text-primary mb-4 group-hover:text-accent-gold-primary transition-colors line-clamp-2">
                       {related.title}
                     </h3>
-                    <div className="mt-auto pt-4 flex items-center text-sm font-semibold text-text-on-dark-primary">
-                      View <ArrowRight className="w-4 h-4 ml-1 text-accent-gold-secondary" />
+                    
+                    <div className="mt-auto pt-6 border-t border-border-soft flex items-center text-xs font-bold uppercase tracking-widest text-text-primary group-hover:text-accent-gold-primary transition-colors">
+                      <span>View</span>
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </Link>
                 ))}
@@ -534,5 +756,6 @@ export function SermonDetail() {
         )}
       </div>
     </div>
+
   );
 }

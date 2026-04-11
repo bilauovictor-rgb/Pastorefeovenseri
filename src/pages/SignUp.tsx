@@ -20,25 +20,25 @@ export function SignUp() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-bg-light-primary">
-      <SEO title="Request Access" description="Request administrative access to the Pastor Efe Ovenseri dashboard." />
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-bg-midnight">
+      <SEO title="Request Access" description="Request administrative access to the Pastor Efe Ovenseri Ministries dashboard. Authorized staff can submit requests for secure portal entry and management." />
       
       {/* Background Elements */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-bg-dark-secondary/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent-gold-primary/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.05),transparent_50%)]"></div>
+      <div className="divine-glow top-0 right-0 opacity-20"></div>
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-xl w-full relative z-10"
       >
-        <div className="bg-white/80 backdrop-blur-xl p-8 md:p-12 rounded-3xl shadow-[0_8px_30px_rgba(26,11,46,0.04)] border border-border-light-soft">
-          <div className="w-16 h-16 bg-bg-dark-secondary/5 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-border-light-soft">
-            <ShieldCheck className="w-8 h-8 text-accent-gold-primary" />
+        <div className="glass-card p-10 md:p-16">
+          <div className="w-16 h-16 bg-gold/10 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-gold/20">
+            <ShieldCheck className="w-8 h-8 text-gold" />
           </div>
           
-          <h1 className="text-3xl font-display font-bold text-text-on-light-primary mb-4 text-center">Request Admin Access</h1>
-          <p className="text-text-on-light-secondary mb-10 leading-relaxed text-center max-w-md mx-auto">
+          <h1 className="text-3xl font-display font-bold mb-4 text-center gold-gradient-text">Request Admin Access</h1>
+          <p className="text-gray-400 mb-12 leading-relaxed text-center max-w-md mx-auto font-light">
             The administrative dashboard is reserved for authorized ministry staff. Please submit your request below.
           </p>
 
@@ -48,44 +48,44 @@ export function SignUp() {
               animate={{ opacity: 1, scale: 1 }}
               className="text-center py-10"
             >
-              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-100">
+              <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/20">
                 <CheckCircle className="w-10 h-10 text-green-500" />
               </div>
-              <h2 className="text-2xl font-display font-bold text-text-on-light-primary mb-4">Request Received</h2>
-              <p className="text-text-on-light-secondary mb-8">
+              <h2 className="text-2xl font-display font-bold text-white mb-4">Request Received</h2>
+              <p className="text-gray-400 mb-10 font-light">
                 Thank you for your request. Our administrative team will review it and contact you via email shortly.
               </p>
               <Link 
                 to="/signin" 
-                className="inline-flex items-center px-8 py-3 bg-bg-dark-secondary hover:bg-bg-dark-tertiary text-white rounded-xl font-bold transition-all gap-2 shadow-lg shadow-bg-dark-secondary/20"
+                className="gold-outline-btn inline-flex items-center gap-2"
               >
-                <ArrowLeft className="w-5 h-5 text-accent-gold-primary" /> Back to Sign In
+                <ArrowLeft className="w-5 h-5" /> Back to Sign In
               </Link>
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="grid md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-sm font-bold text-text-on-light-primary mb-2 flex items-center gap-2">
-                    <User className="w-4 h-4 text-accent-gold-primary" /> Full Name
+                  <label className="block text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                    <User className="w-3.5 h-3.5" /> Full Name
                   </label>
                   <input 
                     type="text" 
                     required
-                    className="w-full px-4 py-3 bg-white border border-border-light-soft text-text-on-light-primary rounded-xl focus:ring-2 focus:ring-accent-gold-primary focus:border-accent-gold-primary outline-none transition-all"
+                    className="w-full px-5 py-4 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-gold/50 outline-none transition-all placeholder-gray-600"
                     placeholder="John Doe"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-text-on-light-primary mb-2 flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-accent-gold-primary" /> Email Address
+                  <label className="block text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                    <Mail className="w-3.5 h-3.5" /> Email Address
                   </label>
                   <input 
                     type="email" 
                     required
-                    className="w-full px-4 py-3 bg-white border border-border-light-soft text-text-on-light-primary rounded-xl focus:ring-2 focus:ring-accent-gold-primary focus:border-accent-gold-primary outline-none transition-all"
+                    className="w-full px-5 py-4 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-gold/50 outline-none transition-all placeholder-gray-600"
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
@@ -93,11 +93,11 @@ export function SignUp() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-bold text-text-on-light-primary mb-2">Reason for Access</label>
+                <label className="block text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-3">Reason for Access</label>
                 <textarea 
                   required
                   rows={4}
-                  className="w-full px-4 py-3 bg-white border border-border-light-soft text-text-on-light-primary rounded-xl focus:ring-2 focus:ring-accent-gold-primary focus:border-accent-gold-primary outline-none transition-all resize-none"
+                  className="w-full px-5 py-4 bg-white/5 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-gold/50 outline-none transition-all resize-none placeholder-gray-600"
                   placeholder="Explain your role in the ministry and why you need access..."
                   value={formData.reason}
                   onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
@@ -105,12 +105,12 @@ export function SignUp() {
               </div>
               <button
                 type="submit"
-                className="w-full py-4 bg-bg-dark-secondary hover:bg-bg-dark-tertiary text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-3 shadow-lg shadow-bg-dark-secondary/20"
+                className="w-full py-4 gold-premium-btn rounded-xl flex items-center justify-center gap-3"
               >
-                <Send className="w-5 h-5 text-accent-gold-primary" /> Submit Request
+                <Send className="w-5 h-5" /> Submit Request
               </button>
-              <div className="text-center pt-4">
-                <Link to="/signin" className="text-sm text-bg-dark-secondary font-bold hover:text-accent-gold-primary transition-colors">
+              <div className="text-center pt-6">
+                <Link to="/signin" className="text-xs text-gold font-bold hover:text-white transition-colors uppercase tracking-widest">
                   Already have access? Sign In
                 </Link>
               </div>
@@ -118,12 +118,13 @@ export function SignUp() {
           )}
         </div>
 
-        <div className="mt-8 text-center">
-          <Link to="/" className="text-sm text-text-on-light-muted hover:text-text-on-light-primary transition-colors font-medium">
+        <div className="mt-10 text-center">
+          <Link to="/" className="text-xs text-gray-500 hover:text-gold transition-colors font-bold uppercase tracking-widest">
             &larr; Back to Public Website
           </Link>
         </div>
       </motion.div>
     </div>
+
   );
 }

@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -16,13 +17,20 @@ import { Admin } from './pages/Admin';
 import { SignIn } from './pages/SignIn';
 import { SignUp } from './pages/SignUp';
 import { ScrollToTop } from './components/ScrollToTop';
+import { BackToTop } from './components/BackToTop';
+import { VoiceAssistant } from './components/VoiceAssistant';
+import { Chatbot } from './components/Chatbot';
 
 function AppContent() {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin') || location.pathname === '/signin' || location.pathname === '/signup';
 
   return (
-    <div className="font-sans antialiased flex flex-col min-h-screen text-text-muted">
+    <div className="font-sans antialiased flex flex-col min-h-screen layered-wave-bg">
+      <div className="wave-container">
+        <div className="wave-layer wave-middle"></div>
+        <div className="wave-layer wave-top"></div>
+      </div>
       {!isAdminPage && <Navbar />}
       <main className={`flex-grow ${!isAdminPage ? 'pt-20' : ''}`}>
         <Routes>
@@ -41,6 +49,9 @@ function AppContent() {
         </Routes>
       </main>
       {!isAdminPage && <Footer />}
+      {!isAdminPage && <BackToTop />}
+      {!isAdminPage && <VoiceAssistant />}
+      {!isAdminPage && <Chatbot />}
     </div>
   );
 }

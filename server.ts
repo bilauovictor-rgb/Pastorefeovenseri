@@ -6,8 +6,9 @@ import axios from "axios";
 import dotenv from "dotenv";
 import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 
-import firebaseConfig from "./firebase-applet-config.json";
+import firebaseConfig from "./firebase-applet-config.json" with { type: "json" };
 
 dotenv.config();
 
@@ -79,12 +80,6 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
-
-  // Ensure public/podcasts directory exists
-  const podcastsDir = path.join(process.cwd(), 'public', 'podcasts');
-  if (!fs.existsSync(podcastsDir)) {
-    fs.mkdirSync(podcastsDir, { recursive: true });
-  }
 
   // API routes
   app.get("/api/health", (req, res) => {
@@ -222,14 +217,25 @@ async function startServer() {
             responseType: 'arraybuffer'
           });
 
-          const fileName = `podcast-${id}-${Date.now()}.mp3`;
-          const filePath = path.join(podcastsDir, fileName);
-          
-          fs.writeFileSync(filePath, Buffer.from(response.data));
+          const bucketName = process.env.GCS_PODCAST_BUCKET;
+          if (!bucketName) {
+            throw new Error("GCS_PODCAST_BUCKET environment variable is missing. Cannot upload audio.");
+          }
+
+          const fileName = `podcasts/podcast-${id}-${Date.now()}.mp3`;
+          const bucket = getStorage().bucket(bucketName);
+          const file = bucket.file(fileName);
+
+          console.log(`Uploading audio to GCS bucket: ${bucketName}, file: ${fileName}`);
+          await file.save(Buffer.from(response.data), {
+            metadata: { contentType: 'audio/mpeg' }
+          });
+
+          const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
 
           // Update resource metadata
           const updates = {
-            podcastAudioUrl: `/podcasts/${fileName}`,
+            podcastAudioUrl: publicUrl,
             podcastAudioStatus: "ready",
             podcastGeneratedAt: new Date().toISOString(),
             podcastError: admin.firestore.FieldValue.delete()
@@ -274,9 +280,6 @@ async function startServer() {
       nextService: "Sunday, 10:00 AM"
     });
   });
-
-  // Serve generated podcasts
-  app.use('/podcasts', express.static(podcastsDir));
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

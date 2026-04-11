@@ -25,6 +25,15 @@ service cloud.firestore {
     //   - podcastAudioStatus: string (optional, enum: none, generating, ready, failed)
     //   - podcastGeneratedAt: string (optional, ISO 8601)
     //
+    // Collection: contacts
+    // Document ID: auto-generated
+    // Fields:
+    //   - name: string (required)
+    //   - email: string (required)
+    //   - subject: string (required)
+    //   - message: string (required)
+    //   - createdAt: string (required, ISO 8601)
+    //
     // ===============================================================
 
     // ===============================================================
@@ -37,9 +46,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() &&
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-         (request.auth.token.email == "officialgiganticcomputers@gmail.com" && request.auth.token.email_verified == true));
+        (request.auth.token.email == "officialgiganticcomputers@gmail.com" ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
 
     function isValidSermon(data) {
@@ -56,10 +65,27 @@ service cloud.firestore {
              (!('email' in data) || (data.email is string && data.email.size() < 10000)) &&
              (!('excerpt' in data) || (data.excerpt is string && data.excerpt.size() < 1000)) &&
              (!('featuredImage' in data) || (data.featuredImage is string && data.featuredImage.size() < 1000)) &&
+             (!('scheduledDate' in data) || (data.scheduledDate is string)) &&
              (!('publishAt' in data) || (data.publishAt is string)) &&
              (!('podcastAudioUrl' in data) || (data.podcastAudioUrl is string)) &&
              (!('podcastAudioStatus' in data) || (data.podcastAudioStatus in ['none', 'generating', 'ready', 'failed'])) &&
              (!('podcastGeneratedAt' in data) || (data.podcastGeneratedAt is string));
+    }
+
+    function isValidContact(data) {
+      return data.keys().hasAll(['name', 'email', 'subject', 'message', 'createdAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.subject is string && data.subject.size() > 0 && data.subject.size() < 500 &&
+             data.message is string && data.message.size() > 0 && data.message.size() < 5000 &&
+             data.createdAt is string;
+    }
+
+    function isValidSubscriber(data) {
+      return data.keys().hasAll(['email', 'createdAt', 'sourcePage']) &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.createdAt is string &&
+             data.sourcePage is string && data.sourcePage.size() < 500;
     }
 
     // ===============================================================
@@ -67,19 +93,39 @@ service cloud.firestore {
     // ===============================================================
 
     match /sermons/{sermonId} {
-      // Public can read published sermons
-      allow read: if resource.data.status == 'published' || isAdmin();
+      // Allow read (get/list) if admin or if the document is published
+      // For get, also allow if the document doesn't exist (to support onSnapshot init)
+      allow read: if isAdmin() || resource == null || resource.data.status == 'published';
       
       // Only admins can create, update, or delete
-      allow create: if isAdmin() && isValidSermon(request.resource.data);
-      allow update: if isAdmin() && isValidSermon(request.resource.data);
-      allow delete: if isAdmin();
+      allow write: if isAdmin() && (request.method != 'create' && request.method != 'update' || isValidSermon(request.resource.data));
+    }
+
+    match /contacts/{contactId} {
+      // Admins can read (list/get)
+      allow read: if isAdmin();
+      // Anyone can create a valid contact submission
+      allow create: if isValidContact(request.resource.data);
+      // No updates or deletes allowed
+      allow update, delete: if false;
+    }
+
+    match /subscribers/{email} {
+      // Admins can read
+      allow read: if isAdmin();
+      // Anyone can subscribe (create)
+      allow create: if isValidSubscriber(request.resource.data);
+      // No updates or deletes allowed
+      allow update, delete: if false;
     }
 
     match /users/{userId} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      // Only admins can set roles
-      allow create, update: if isAdmin();
+      // Allow the default admin to bootstrap their own document with admin role
+      allow create: if isAuthenticated() && request.auth.uid == userId && 
+                    request.auth.token.email == "officialgiganticcomputers@gmail.com" &&
+                    request.resource.data.role == 'admin';
+      allow update: if isAdmin();
     }
 
     match /{path=**} {

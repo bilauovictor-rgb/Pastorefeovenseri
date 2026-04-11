@@ -31,12 +31,44 @@
         "podcastGeneratedAt": { "type": "string", "format": "date-time", "description": "When the podcast was generated." }
       },
       "required": ["title", "status", "createdAt"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "A contact form submission.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Full name of the person." },
+        "email": { "type": "string", "description": "Email address of the person." },
+        "subject": { "type": "string", "description": "Subject of the inquiry (Inquiry Type)." },
+        "message": { "type": "string", "description": "The message content." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Submission timestamp." }
+      },
+      "required": ["name", "email", "subject", "message", "createdAt"]
+    },
+    "Subscriber": {
+      "title": "Subscriber",
+      "description": "A newsletter or devotional subscriber.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "description": "Email address of the subscriber." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Subscription timestamp." },
+        "sourcePage": { "type": "string", "description": "The page where the user subscribed." }
+      },
+      "required": ["email", "createdAt", "sourcePage"]
     }
   },
   "firestore": {
     "/sermons/{sermonId}": {
       "schema": "Sermon",
       "description": "Collection of all sermons in the pipeline."
+    },
+    "/contacts/{contactId}": {
+      "schema": "Contact",
+      "description": "Collection of contact form submissions."
+    },
+    "/subscribers/{email}": {
+      "schema": "Subscriber",
+      "description": "Collection of newsletter subscribers."
     }
   }
 }
