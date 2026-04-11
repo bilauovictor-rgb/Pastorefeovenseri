@@ -11,8 +11,6 @@ declare global {
   }
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 interface Message {
   id: string;
   role: 'user' | 'model';
@@ -86,13 +84,25 @@ export function Chatbot() {
     }
 
     // Initialize chat session
+    const initChat = async () => {
+      try {
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey) return; // Don't initialize if no key
+
+        const ai = new GoogleGenAI({ apiKey });
+        chatRef.current = ai.chats.create({
+          model: "gemini-3-flash-preview",
+          config: {
+            systemInstruction: "You are a helpful and compassionate assistant for Pastor Efe Ovenseri's ministry website. You provide information about the ministry, sermons, events, and offer spiritual guidance based on Christian principles. Keep your answers concise, respectful, and uplifting.",
+          },
+        });
+      } catch (err) {
+        console.error("Failed to initialize chat:", err);
+      }
+    };
+
     if (!chatRef.current) {
-      chatRef.current = ai.chats.create({
-        model: "gemini-3-flash-preview",
-        config: {
-          systemInstruction: "You are a helpful and compassionate assistant for Pastor Efe Ovenseri's ministry website. You provide information about the ministry, sermons, events, and offer spiritual guidance based on Christian principles. Keep your answers concise, respectful, and uplifting.",
-        },
-      });
+      initChat();
     }
   }, []);
 
@@ -146,7 +156,17 @@ export function Chatbot() {
 
     try {
       if (!chatRef.current) {
-        throw new Error("Chat session not initialized");
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey) {
+          throw new Error("Gemini API Key is not configured. Please add VITE_GEMINI_API_KEY to your environment variables.");
+        }
+        const ai = new GoogleGenAI({ apiKey });
+        chatRef.current = ai.chats.create({
+          model: "gemini-3-flash-preview",
+          config: {
+            systemInstruction: "You are a helpful and compassionate assistant for Pastor Efe Ovenseri's ministry website. You provide information about the ministry, sermons, events, and offer spiritual guidance based on Christian principles. Keep your answers concise, respectful, and uplifting.",
+          },
+        });
       }
       
       const response = await chatRef.current.sendMessage({ message: userMessage });

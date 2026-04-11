@@ -4,6 +4,7 @@ import { FadeInUp } from '../components/FadeInUp';
 import { AnimatedCounter } from '../components/AnimatedCounter';
 import { SEO } from '../components/SEO';
 import { useEffect, useState, useRef } from 'react';
+import { SITE_METRICS, SITE_STATUS } from '../constants';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, query, where, onSnapshot, orderBy, limit, setDoc, doc } from 'firebase/firestore';
 import YouTube from 'react-youtube';
@@ -74,21 +75,9 @@ export function Home() {
   const rotate = useTransform(smoothProgress, [0, 1], [0, 45]);
 
   useEffect(() => {
-    // Mock metrics if API fails, but attempt fetch
-    fetch('/api/metrics')
-      .then(res => res.json())
-      .then(data => setMetrics(data))
-      .catch(() => setMetrics({
-        yearsOfService: 32,
-        nationsReached: 20,
-        coreMinistries: 3,
-        divineDedication: 100
-      }));
-
-    fetch('/api/status')
-      .then(res => res.json())
-      .then(data => setStatus(data))
-      .catch(() => setStatus({ isLive: false, nextService: 'Sunday 10:00 AM' }));
+    // Use static constants instead of API calls
+    setMetrics(SITE_METRICS);
+    setStatus(SITE_STATUS);
 
     // Hero Carousel Interval
     const interval = setInterval(() => {
