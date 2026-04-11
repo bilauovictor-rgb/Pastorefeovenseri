@@ -1,4 +1,4 @@
-import { CirclePlay, Headphones, Calendar, ArrowRight, Loader2, Video, User, MapPin, Search, X } from 'lucide-react';
+import { CirclePlay, Headphones, Calendar, ArrowRight, Loader2, Video, User, MapPin, Search, X, Clock } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { SEO } from '../components/SEO';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -18,6 +18,7 @@ interface Resource {
   videoUrl?: string;
   audioEmbedUrl?: string;
   youtubeId?: string;
+  duration?: string;
   excerpt?: string;
   speaker?: string;
   date?: string;
@@ -35,7 +36,7 @@ export function Blog() {
   // Map URL category to Firestore category
   const categoryMap: Record<string, string> = {
     'sermons': 'Sermons',
-    'leadership-podcasts': 'Leadership Podcasts',
+    'leadership-podcasts': 'Teachings & Prayers',
     'events': 'Events'
   };
 
@@ -63,7 +64,7 @@ export function Blog() {
             ...data,
             category: data.category || 'Sermons',
             type: data.type || 'Sermon',
-            icon: data.icon || (data.category === 'Leadership Podcasts' ? 'headphones' : data.category === 'Events' ? 'calendar' : 'play')
+            icon: data.icon || (data.category === 'Teachings & Prayers' ? 'headphones' : data.category === 'Events' ? 'calendar' : 'play')
           } as Resource;
         });
 
@@ -84,8 +85,8 @@ export function Blog() {
     switch (category) {
       case 'leadership-podcasts':
         return {
-          title: 'Leadership Podcasts',
-          description: 'Equipping leaders with spiritual wisdom and practical excellence for global impact. Join Pastor Efe Ovenseri for transformative leadership insights and growth.'
+          title: 'Audio & Video Teachings & Prayers',
+          description: 'Access a divine collection of prophetic prayers, sermon messages, and spiritual teachings designed to empower your walk with God.'
         };
       case 'events':
         return {
@@ -114,52 +115,56 @@ export function Blog() {
     if (category === 'leadership-podcasts') {
       return [
         {
-          id: 'demo-podcast-1',
-          slug: 'demo-podcast-1',
-          type: 'Podcast',
-          title: 'Leading with Spiritual Intelligence',
-          description: 'Discover how to apply spiritual discernment to everyday leadership challenges.',
-          excerpt: 'Discover how to apply spiritual discernment to everyday leadership challenges.',
-          category: 'Leadership Podcasts',
+          id: 'demo-prayer-1',
+          slug: 'demo-prayer-1',
+          type: 'Prophetic Prayer',
+          title: 'Prayer for Open Doors',
+          description: 'A powerful prophetic session focused on breaking barriers and entering into new seasons of divine opportunity.',
+          excerpt: 'A powerful prophetic session focused on breaking barriers and entering into new seasons of divine opportunity.',
+          category: 'Teachings & Prayers',
           icon: 'headphones',
           youtubeId: 'dQw4w9WgXcQ',
           speaker: 'Pastor Efe Ovenseri',
+          duration: '15:20'
         },
         {
-          id: 'demo-podcast-2',
-          slug: 'demo-podcast-2',
-          type: 'Podcast',
-          title: 'The Discipline of Visionary Leaders',
-          description: 'Learn the habits and disciplines that separate good leaders from visionary ones.',
-          excerpt: 'Learn the habits and disciplines that separate good leaders from visionary ones.',
-          category: 'Leadership Podcasts',
-          icon: 'headphones',
+          id: 'demo-sermon-1',
+          slug: 'demo-sermon-1',
+          type: 'Sermon Message',
+          title: 'Breaking Generational Limitations',
+          description: 'Understanding the spiritual mechanics of deliverance and how to walk in total freedom from ancestral patterns.',
+          excerpt: 'Understanding the spiritual mechanics of deliverance and how to walk in total freedom from ancestral patterns.',
+          category: 'Teachings & Prayers',
+          icon: 'play',
           youtubeId: 'dQw4w9WgXcQ',
           speaker: 'Pastor Efe Ovenseri',
+          duration: '45:10'
         },
         {
-          id: 'demo-podcast-3',
-          slug: 'demo-podcast-3',
-          type: 'Podcast',
-          title: 'Kingdom Leadership in a Modern World',
-          description: 'Navigating the complexities of modern business with Kingdom principles.',
-          excerpt: 'Navigating the complexities of modern business with Kingdom principles.',
-          category: 'Leadership Podcasts',
-          icon: 'headphones',
+          id: 'demo-teaching-1',
+          slug: 'demo-teaching-1',
+          type: 'Teaching',
+          title: 'The Power of Alignment',
+          description: 'A deep dive into the importance of aligning your spirit, soul, and body with the divine purpose of God.',
+          excerpt: 'A deep dive into the importance of aligning your spirit, soul, and body with the divine purpose of God.',
+          category: 'Teachings & Prayers',
+          icon: 'play',
           youtubeId: 'dQw4w9WgXcQ',
           speaker: 'Pastor Efe Ovenseri',
+          duration: '38:45'
         },
         {
-          id: 'demo-podcast-4',
-          slug: 'demo-podcast-4',
-          type: 'Podcast',
-          title: 'Building Influence with Integrity',
-          description: 'How to grow your influence without compromising your core values.',
-          excerpt: 'How to grow your influence without compromising your core values.',
-          category: 'Leadership Podcasts',
+          id: 'demo-prayer-2',
+          slug: 'demo-prayer-2',
+          type: 'Morning Prayer',
+          title: 'Morning Prayer for Divine Speed',
+          description: 'Start your day with this prophetic charge to activate the grace for acceleration and supernatural progress.',
+          excerpt: 'Start your day with this prophetic charge to activate the grace for acceleration and supernatural progress.',
+          category: 'Teachings & Prayers',
           icon: 'headphones',
           youtubeId: 'dQw4w9WgXcQ',
           speaker: 'Pastor Efe Ovenseri',
+          duration: '12:00'
         }
       ];
     } else if (category === 'events') {
@@ -245,7 +250,7 @@ export function Blog() {
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <span className="inline-block px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-[10px] font-bold tracking-[0.2em] uppercase mb-6">
-              {category === 'leadership-podcasts' ? 'Audio Wisdom' : category === 'events' ? 'Kingdom Gatherings' : 'Spiritual Nourishment'}
+              {category === 'leadership-podcasts' ? 'Audio & Video Wisdom' : category === 'events' ? 'Kingdom Gatherings' : 'Spiritual Nourishment'}
             </span>
             <h1 className="text-4xl md:text-6xl font-display font-bold mb-6 gold-gradient-text leading-tight">
               {pageInfo.title}
@@ -263,7 +268,7 @@ export function Blog() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={`Search ${pageInfo.title.toLowerCase()}...`}
+                placeholder={category === 'leadership-podcasts' ? "Search prayers, sermons..." : `Search ${pageInfo.title.toLowerCase()}...`}
                 className="block w-full pl-12 pr-12 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-transparent transition-all shadow-2xl"
               />
               {searchTerm && (
@@ -316,7 +321,9 @@ export function Blog() {
 
                 <div className="p-8 flex-grow flex flex-col">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-bold uppercase text-gold tracking-widest">{resource.type}</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded bg-gold/10 text-gold border border-gold/20`}>
+                      {resource.type}
+                    </span>
                     {(resource.youtubeId || resource.audioEmbedUrl || resource.videoUrl || resource.audioUrl) && (
                       <span className="flex items-center text-[9px] font-bold uppercase tracking-widest text-white bg-red-600/20 border border-red-600/30 px-2.5 py-1 rounded-full backdrop-blur-sm">
                         <Video className="w-3 h-3 mr-1.5 text-red-500" />
@@ -340,6 +347,12 @@ export function Blog() {
                         {resource.date}
                       </span>
                     )}
+                    {(resource as any).duration && (
+                      <span className="flex items-center">
+                        <Clock className="w-3.5 h-3.5 mr-1.5 text-gold/60" />
+                        {(resource as any).duration}
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-gray-400 font-light text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
@@ -347,7 +360,11 @@ export function Blog() {
                   </p>
                   
                   <div className="pt-6 border-t border-white/5 flex items-center text-xs font-bold uppercase tracking-widest text-white group-hover:text-gold transition-colors">
-                    <span>{resource.icon === 'play' ? 'Watch Resource' : resource.icon === 'headphones' ? 'Listen Now' : 'View Details'}</span>
+                    <span>
+                      {resource.type.toLowerCase().includes('prayer') ? 'Listen Now' : 
+                       resource.type.toLowerCase().includes('sermon') ? 'Watch / Listen' :
+                       resource.icon === 'play' ? 'Watch Now' : 'Listen Now'}
+                    </span>
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>

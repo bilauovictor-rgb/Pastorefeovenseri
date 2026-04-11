@@ -29,7 +29,7 @@ export function Navbar() {
 
   const resourceCategories = [
     { name: 'Sermons', path: '/resources/sermons' },
-    { name: 'Leadership Podcasts', path: '/resources/leadership-podcasts' },
+    { name: 'Teachings & Prayers', path: '/resources/leadership-podcasts' },
     { name: 'Events', path: '/resources/events' },
   ];
 

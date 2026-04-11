@@ -47,6 +47,14 @@ export function Home() {
     }
   };
 
+  const handleAddToCalendar = (event: any) => {
+    const title = encodeURIComponent(event.title);
+    const details = encodeURIComponent(`Join us for ${event.title} at ${event.location}. Time: ${event.time}`);
+    const location = encodeURIComponent(event.location);
+    const googleUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}`;
+    window.open(googleUrl, '_blank');
+  };
+
   const heroImages = [
     'https://images.unsplash.com/photo-1548625361-195fe57724e1?auto=format&fit=crop&q=80&w=2000',
     'https://images.unsplash.com/photo-1519750783826-e2420f4d687f?auto=format&fit=crop&q=80&w=2000',
@@ -448,7 +456,7 @@ export function Home() {
             ].map((testimonial, i) => (
               <FadeInUp key={i} delay={i * 0.1}>
                 <div className="glass-card p-8 h-full flex flex-col relative group hover:scale-[1.02] transition-all duration-500">
-                  <Quote className="absolute top-6 right-8 w-12 h-12 text-accent-gold-primary/10 group-hover:text-accent-gold-primary/20 transition-colors" />
+                  <Quote className="absolute top-6 right-8 w-[31px] h-[31px] text-accent-gold-primary/10 group-hover:text-accent-gold-primary/20 transition-colors" />
                   <div className="flex items-center gap-4 mb-6">
                     <div className="w-14 h-14 rounded-full border-2 border-accent-gold-primary/30 bg-accent-gold-primary/10 flex items-center justify-center text-accent-gold-primary font-display font-bold text-xl">
                       {testimonial.initials}
@@ -623,45 +631,73 @@ export function Home() {
             <h3 className="text-4xl md:text-5xl font-display font-bold text-white mb-6">Upcoming Gatherings</h3>
           </FadeInUp>
 
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="max-w-5xl mx-auto space-y-8">
             {[
               {
-                title: "Sunday Worship Service",
+                title: "Vision Sunday Service",
                 date: "Every Sunday",
-                time: "10:00 AM",
+                time: "1:00 PM",
                 location: "Main Sanctuary & Online"
               },
               {
                 title: "Mid-Week Spiritual Growth",
-                date: "Every Wednesday",
-                time: "6:30 PM",
-                location: "Online via Zoom"
+                date: "Every Monday - Friday",
+                time: "9:00 PM Daily",
+                location: "Online via TikTok"
               },
               {
-                title: "Night of Divine Encounters",
+                title: "Night of Blaze",
                 date: "Last Friday of Month",
-                time: "9:00 PM",
-                location: "Main Sanctuary"
+                time: "11:50 PM",
+                location: "Main Sanctuary & Online"
               }
             ].map((event, i) => (
               <FadeInUp key={i} delay={i * 0.1}>
-                <div className="glass-card p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-accent-gold-primary/50 transition-all duration-500">
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-2xl bg-accent-gold-primary/10 flex flex-col items-center justify-center text-accent-gold-primary border border-accent-gold-primary/20">
-                      <Calendar className="w-6 h-6 mb-1" />
-                      <span className="text-[10px] font-bold uppercase tracking-tighter">Event</span>
-                    </div>
-                    <div>
-                      <h4 className="text-xl font-display font-bold text-white mb-1">{event.title}</h4>
-                      <div className="flex flex-wrap items-center gap-4 text-text-muted text-sm">
-                        <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-accent-gold-primary" /> {event.time}</span>
-                        <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-accent-gold-primary" /> {event.location}</span>
+                <div className="glass-card p-8 md:p-10 group hover:border-accent-gold-primary/50 transition-all duration-700 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Calendar className="w-32 h-32 -mr-8 -mt-8 text-accent-gold-primary" />
+                  </div>
+                  
+                  <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+                    {/* Date Badge */}
+                    <div className="w-full md:w-36 h-36 rounded-[2rem] bg-accent-gold-primary/5 border border-accent-gold-primary/20 flex flex-col items-center justify-center text-accent-gold-primary shrink-0 group-hover:bg-accent-gold-primary/10 transition-all duration-500 shadow-premium">
+                      <Calendar className="w-8 h-8 mb-3" />
+                      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-center px-4 leading-tight">
+                        {event.date}
                       </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-accent-gold-primary font-bold text-lg mb-2">{event.date}</div>
-                    <button className="text-white text-xs font-bold uppercase tracking-widest hover:text-accent-gold-primary transition-colors">Add to Calendar</button>
+
+                    {/* Content */}
+                    <div className="flex-grow text-center md:text-left">
+                      <h4 className="text-2xl md:text-4xl font-display font-bold text-white mb-4 group-hover:text-accent-gold-primary transition-colors duration-500">
+                        {event.title}
+                      </h4>
+                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-8 text-text-secondary">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                            <Clock className="w-5 h-5 text-accent-gold-primary" />
+                          </div>
+                          <span className="text-lg font-light">{event.time}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                            <MapPin className="w-5 h-5 text-accent-gold-primary" />
+                          </div>
+                          <span className="text-lg font-light">{event.location}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action */}
+                    <div className="shrink-0 w-full md:w-auto">
+                      <button 
+                        onClick={() => handleAddToCalendar(event)}
+                        className="gold-premium-btn w-full md:w-auto px-8 py-4 text-sm font-bold flex items-center justify-center gap-3 group/btn hover:scale-105 active:scale-95 transition-all"
+                      >
+                        <Bell className="w-5 h-5 group-hover/btn:animate-bounce" />
+                        Add to Calendar
+                      </button>
+                    </div>
                   </div>
                 </div>
               </FadeInUp>

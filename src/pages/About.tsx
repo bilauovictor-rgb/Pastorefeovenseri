@@ -193,7 +193,7 @@ export function About() {
                     <div className="absolute top-0 right-0 p-8 opacity-10">
                       <Target 
                         className="text-accent-gold-primary" 
-                        style={{ width: '61.982px', height: '33.982px' }}
+                        style={{ width: '65.9939px', height: '58.9939px' }}
                       />
                     </div>
                     <h3 className="text-2xl font-display font-bold text-white mb-4">Enterprise Meets Ministry</h3>

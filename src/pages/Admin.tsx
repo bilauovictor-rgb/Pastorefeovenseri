@@ -659,7 +659,7 @@ export function Admin() {
                               onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                             >
                               <option value="Sermons" className="admin-select-override">Sermons</option>
-                              <option value="Leadership Podcasts" className="admin-select-override">Leadership Podcasts</option>
+                              <option value="Teachings & Prayers" className="admin-select-override">Teachings & Prayers</option>
                               <option value="Events" className="admin-select-override">Events</option>
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-5 text-gold/50">
