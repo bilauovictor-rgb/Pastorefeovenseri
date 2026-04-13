@@ -15,9 +15,38 @@ export function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!formData.firstName.trim()) {
+      errors.firstName = 'First name is required';
+    }
+    if (!formData.lastName.trim()) {
+      errors.lastName = 'Last name is required';
+    }
+    if (!formData.email.trim()) {
+      errors.email = 'Email address is required';
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    if (!formData.message.trim()) {
+      errors.message = 'Message is required';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     setStatus('idle');
     setErrorMessage('');
@@ -33,6 +62,7 @@ export function Contact() {
 
       await addDoc(collection(db, 'contacts'), contactData);
       setStatus('success');
+      setValidationErrors({});
       setFormData({
         firstName: '',
         lastName: '',
@@ -115,10 +145,13 @@ export function Contact() {
                   <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
                     <CheckCircle className="w-10 h-10 text-green-400" />
                   </div>
-                  <h4 className="text-2xl font-bold text-text-on-dark-primary mb-4">Message Sent!</h4>
+                  <h4 className="text-2xl font-bold text-text-on-dark-primary mb-4">Message sent successfully!</h4>
                   <p className="text-text-on-dark-secondary mb-10 text-lg font-light">Thank you for reaching out. We will get back to you as soon as possible.</p>
                   <button 
-                    onClick={() => setStatus('idle')}
+                    onClick={() => {
+                      setStatus('idle');
+                      setValidationErrors({});
+                    }}
                     className="px-10 py-4 bg-white/5 border border-white/10 rounded-2xl text-text-on-dark-primary font-bold hover:bg-white/10 transition-all active:scale-95"
                   >
                     Send Another Message
@@ -139,24 +172,30 @@ export function Contact() {
                       <input 
                         id="first-name" 
                         type="text" 
-                        required
-                        className="w-full px-6 py-4 rounded-2xl border border-white/10 bg-white/[0.03] text-text-on-dark-primary focus:bg-white/[0.05] focus:ring-2 focus:ring-accent-gold-primary/50 focus:border-accent-gold-primary/50 transition-all outline-none placeholder:text-white/20" 
+                        className={`w-full px-6 py-4 rounded-2xl border ${validationErrors.firstName ? 'border-red-500/50 ring-1 ring-red-500/20' : 'border-white/10'} bg-white/[0.03] text-text-on-dark-primary focus:bg-white/[0.05] focus:ring-2 focus:ring-accent-gold-primary/50 focus:border-accent-gold-primary/50 transition-all outline-none placeholder:text-white/20`} 
                         placeholder="John"
                         value={formData.firstName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                        onChange={(e) => {
+                          setFormData(prev => ({ ...prev, firstName: e.target.value }));
+                          if (validationErrors.firstName) setValidationErrors(prev => ({ ...prev, firstName: '' }));
+                        }}
                       />
+                      {validationErrors.firstName && <p className="mt-2 text-[10px] text-red-400 font-bold uppercase tracking-wider ml-1">{validationErrors.firstName}</p>}
                     </div>
                     <div>
                       <label htmlFor="last-name" className="block text-xs font-bold text-text-on-dark-primary mb-3 uppercase tracking-widest opacity-70">Last Name</label>
                       <input 
                         id="last-name" 
                         type="text" 
-                        required
-                        className="w-full px-6 py-4 rounded-2xl border border-white/10 bg-white/[0.03] text-text-on-dark-primary focus:bg-white/[0.05] focus:ring-2 focus:ring-accent-gold-primary/50 focus:border-accent-gold-primary/50 transition-all outline-none placeholder:text-white/20" 
+                        className={`w-full px-6 py-4 rounded-2xl border ${validationErrors.lastName ? 'border-red-500/50 ring-1 ring-red-500/20' : 'border-white/10'} bg-white/[0.03] text-text-on-dark-primary focus:bg-white/[0.05] focus:ring-2 focus:ring-accent-gold-primary/50 focus:border-accent-gold-primary/50 transition-all outline-none placeholder:text-white/20`} 
                         placeholder="Doe"
                         value={formData.lastName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                        onChange={(e) => {
+                          setFormData(prev => ({ ...prev, lastName: e.target.value }));
+                          if (validationErrors.lastName) setValidationErrors(prev => ({ ...prev, lastName: '' }));
+                        }}
                       />
+                      {validationErrors.lastName && <p className="mt-2 text-[10px] text-red-400 font-bold uppercase tracking-wider ml-1">{validationErrors.lastName}</p>}
                     </div>
                   </div>
                   
@@ -165,12 +204,15 @@ export function Contact() {
                     <input 
                       id="email" 
                       type="email" 
-                      required
-                      className="w-full px-6 py-4 rounded-2xl border border-white/10 bg-white/[0.03] text-text-on-dark-primary focus:bg-white/[0.05] focus:ring-2 focus:ring-accent-gold-primary/50 focus:border-accent-gold-primary/50 transition-all outline-none placeholder:text-white/20" 
+                      className={`w-full px-6 py-4 rounded-2xl border ${validationErrors.email ? 'border-red-500/50 ring-1 ring-red-500/20' : 'border-white/10'} bg-white/[0.03] text-text-on-dark-primary focus:bg-white/[0.05] focus:ring-2 focus:ring-accent-gold-primary/50 focus:border-accent-gold-primary/50 transition-all outline-none placeholder:text-white/20`} 
                       placeholder="john@example.com"
                       value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, email: e.target.value }));
+                        if (validationErrors.email) setValidationErrors(prev => ({ ...prev, email: '' }));
+                      }}
                     />
+                    {validationErrors.email && <p className="mt-2 text-[10px] text-red-400 font-bold uppercase tracking-wider ml-1">{validationErrors.email}</p>}
                   </div>
 
                   <div>
@@ -193,12 +235,15 @@ export function Contact() {
                     <textarea 
                       id="message" 
                       rows={5} 
-                      required
-                      className="w-full px-6 py-4 rounded-2xl border border-white/10 bg-white/[0.03] text-text-on-dark-primary focus:bg-white/[0.05] focus:ring-2 focus:ring-accent-gold-primary/50 focus:border-accent-gold-primary/50 transition-all outline-none resize-none placeholder:text-white/20" 
+                      className={`w-full px-6 py-4 rounded-2xl border ${validationErrors.message ? 'border-red-500/50 ring-1 ring-red-500/20' : 'border-white/10'} bg-white/[0.03] text-text-on-dark-primary focus:bg-white/[0.05] focus:ring-2 focus:ring-accent-gold-primary/50 focus:border-accent-gold-primary/50 transition-all outline-none resize-none placeholder:text-white/20`} 
                       placeholder="How can we collaborate?"
                       value={formData.message}
-                      onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, message: e.target.value }));
+                        if (validationErrors.message) setValidationErrors(prev => ({ ...prev, message: '' }));
+                      }}
                     ></textarea>
+                    {validationErrors.message && <p className="mt-2 text-[10px] text-red-400 font-bold uppercase tracking-wider ml-1">{validationErrors.message}</p>}
                   </div>
 
                   <button 

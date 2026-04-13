@@ -1,9 +1,10 @@
-import { CirclePlay, Headphones, Calendar, ArrowRight, Loader2, Video, User, MapPin, Search, X, Clock } from 'lucide-react';
+import { CirclePlay, Headphones, Calendar, ArrowRight, Loader2, Video, User, MapPin, Search, X, Clock, Send } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { SEO } from '../components/SEO';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { RSVPModal } from '../components/RSVPModal';
 
 interface Resource {
   id: string | number;
@@ -31,6 +32,8 @@ export function Blog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedEvent, setSelectedEvent] = useState<Resource | null>(null);
+  const [isRSVPModalOpen, setIsRSVPModalOpen] = useState(false);
   const navigate = useNavigate();
 
   // Map URL category to Firestore category
@@ -238,9 +241,21 @@ export function Blog() {
     );
   }, [searchTerm, displayResources]);
 
+  const handleRSVP = (e: React.MouseEvent, resource: Resource) => {
+    e.stopPropagation();
+    setSelectedEvent(resource);
+    setIsRSVPModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-bg-midnight pt-20">
       <SEO title={pageInfo.title} description={pageInfo.description} />
+      
+      <RSVPModal 
+        isOpen={isRSVPModalOpen}
+        onClose={() => setIsRSVPModalOpen(false)}
+        eventTitle={selectedEvent?.title || ''}
+      />
       
       {/* Hero Section */}
       <section className="relative py-24 overflow-hidden border-b border-gold/10 bg-bg-navy-deep">
@@ -359,13 +374,25 @@ export function Blog() {
                     {resource.excerpt || resource.description}
                   </p>
                   
-                  <div className="pt-6 border-t border-white/5 flex items-center text-xs font-bold uppercase tracking-widest text-white group-hover:text-gold transition-colors">
-                    <span>
-                      {resource.type.toLowerCase().includes('prayer') ? 'Listen Now' : 
-                       resource.type.toLowerCase().includes('sermon') ? 'Watch / Listen' :
-                       resource.icon === 'play' ? 'Watch Now' : 'Listen Now'}
-                    </span>
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <div className="flex flex-col gap-4 pt-6 border-t border-white/5">
+                    {resource.category === 'Events' && (
+                      <button
+                        onClick={(e) => handleRSVP(e, resource)}
+                        className="w-full py-3 bg-gold/10 border border-gold/30 text-gold text-xs font-bold uppercase tracking-widest rounded-xl flex items-center justify-center space-x-2 hover:bg-gold hover:text-bg-navy-deep transition-all duration-300"
+                      >
+                        <Send className="w-4 h-4" />
+                        <span>RSVP Now</span>
+                      </button>
+                    )}
+                    
+                    <div className="flex items-center text-xs font-bold uppercase tracking-widest text-white group-hover:text-gold transition-colors">
+                      <span>
+                        {resource.type.toLowerCase().includes('prayer') ? 'Listen Now' : 
+                         resource.type.toLowerCase().includes('sermon') ? 'Watch / Listen' :
+                         resource.icon === 'play' ? 'Watch Now' : 'Listen Now'}
+                      </span>
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
                 </div>
               </div>

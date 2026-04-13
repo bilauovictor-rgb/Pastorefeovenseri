@@ -1,6 +1,89 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { FaFacebook, FaYoutube, FaTiktok } from "react-icons/fa";
-import { Mail, MapPin } from 'lucide-react';
+import { Mail, MapPin, Copy, Check, ExternalLink } from 'lucide-react';
+
+function LocationItem() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const address = "Unit 5, Block 2 Woolwich Dockyard Industrial Estate, Woolwich Church Street, London SE18 5PQ";
+  const mapsUrl = "https://www.google.com/maps/search/?api=1&query=Unit+5+Block+2+Woolwich+Dockyard+Industrial+Estate+London+SE18+5PQ";
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(address);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <li 
+      className="relative group"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+      onClick={() => setIsOpen(!isOpen)}
+    >
+      <div className="flex items-start space-x-3 text-text-secondary text-sm group-hover:text-accent-gold-primary transition-all duration-300 cursor-pointer p-2 -m-2 rounded-lg hover:bg-white/5">
+        <MapPin className="w-4 h-4 text-accent-gold-primary mt-0.5 flex-shrink-0" />
+        <div className="flex-grow min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-medium truncate">Global Ministry Headquarters</span>
+            <button 
+              onClick={handleCopy}
+              className="p-1.5 hover:bg-accent-gold-soft rounded-md transition-colors duration-200 group/copy relative flex-shrink-0"
+              title="Copy Address"
+            >
+              {copied ? (
+                <Check className="w-3 h-3 text-green-500" />
+              ) : (
+                <Copy className="w-3 h-3 text-text-muted group-hover/copy:text-accent-gold-primary" />
+              )}
+              <AnimatePresence>
+                {copied && (
+                  <motion.span 
+                    initial={{ opacity: 0, y: 10, x: '50%' }}
+                    animate={{ opacity: 1, y: 0, x: '50%' }}
+                    exit={{ opacity: 0, y: -10, x: '50%' }}
+                    className="absolute -top-10 right-1/2 bg-bg-navy-deep text-accent-gold-primary text-[10px] px-2 py-1 rounded border border-border-gold shadow-gold whitespace-nowrap z-50 font-bold"
+                  >
+                    Copied!
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
+          
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, y: -5 }}
+                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -5 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="overflow-hidden"
+              >
+                <p className="text-xs text-text-muted leading-relaxed font-light mt-2 mb-3 pr-4">
+                  {address}
+                </p>
+                <a 
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center space-x-2 text-[10px] text-accent-gold-primary hover:text-accent-gold-light transition-colors font-bold uppercase tracking-widest group/link"
+                >
+                  <span>View on Google Maps</span>
+                  <ExternalLink className="w-3 h-3 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                </a>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </li>
+  );
+}
 
 export function Footer() {
   return (
@@ -46,10 +129,7 @@ export function Footer() {
                 <Mail className="w-4 h-4 text-accent-gold-primary" />
                 <span>info@efeovenseri.com</span>
               </li>
-              <li className="flex items-center space-x-3 text-text-secondary text-sm">
-                <MapPin className="w-4 h-4 text-accent-gold-primary" />
-                <span>Global Ministry Headquarters</span>
-              </li>
+              <LocationItem />
               <li className="pt-4">
                 <Link to="/contact" className="text-text-secondary hover:text-accent-gold-primary transition-all duration-300 text-sm font-medium hover:translate-x-1 inline-block">Invite & Book</Link>
               </li>

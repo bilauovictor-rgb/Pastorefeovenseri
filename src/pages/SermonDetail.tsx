@@ -222,7 +222,7 @@ export function SermonDetail() {
                   return rData;
                 })
                 .filter(r => String(r.id) !== String(data.id))
-                .slice(0, 3);
+                .slice(0, 8);
               setRelatedResources(related);
             }).catch(err => {
               console.error("Error fetching related resources:", err);
@@ -333,7 +333,7 @@ export function SermonDetail() {
               if (res) {
                 const related = allDemoData
                   .filter(r => r.category === res.category && r.id !== res.id)
-                  .slice(0, 3);
+                  .slice(0, 8);
                 return { resource: res, related };
               }
               return null;
@@ -720,21 +720,56 @@ export function SermonDetail() {
         {relatedResources.length > 0 && (
           <FadeInUp delay={0.3}>
             <div className="pt-20 border-t border-border-soft">
-              <h2 className="text-2xl font-display font-bold text-text-primary mb-10 flex items-center">
-                <div className="w-8 h-1 bg-accent-gold-primary mr-4 rounded-full" />
-                Related Resources
-              </h2>
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="flex items-center justify-between mb-10">
+                <h2 className="text-2xl font-display font-bold text-text-primary flex items-center">
+                  <div className="w-8 h-1 bg-accent-gold-primary mr-4 rounded-full" />
+                  Related Resources
+                </h2>
+                <div className="hidden md:flex gap-2">
+                  <button 
+                    onClick={() => {
+                      const el = document.getElementById('related-carousel');
+                      if (el) el.scrollBy({ left: -400, behavior: 'smooth' });
+                    }}
+                    className="p-2 rounded-full border border-border-soft hover:border-accent-gold-primary text-text-secondary hover:text-accent-gold-primary transition-all"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const el = document.getElementById('related-carousel');
+                      if (el) el.scrollBy({ left: 400, behavior: 'smooth' });
+                    }}
+                    className="p-2 rounded-full border border-border-soft hover:border-accent-gold-primary text-text-secondary hover:text-accent-gold-primary transition-all"
+                  >
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div 
+                id="related-carousel"
+                className="flex overflow-x-auto gap-8 pb-12 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0"
+              >
                 {relatedResources.map((related) => (
                   <Link 
                     key={related.id}
                     to={`/resources/sermons/${related.slug || related.id}`}
-                    className="glass-card p-8 group flex flex-col hover:border-accent-gold-primary/30 transition-all duration-500"
+                    className="glass-card p-8 group flex flex-col hover:border-accent-gold-primary/30 transition-all duration-500 min-w-[300px] md:min-w-[350px] snap-start"
                   >
-                    <div className="h-40 bg-bg-secondary rounded-2xl flex items-center justify-center mb-6 border border-border-soft group-hover:bg-accent-gold-soft transition-colors">
-                      <div className="p-6 opacity-40 group-hover:opacity-100 transition-opacity">
-                        {getIcon(related.icon)}
-                      </div>
+                    <div className="h-40 bg-bg-secondary rounded-2xl flex items-center justify-center mb-6 border border-border-soft group-hover:bg-accent-gold-soft transition-colors overflow-hidden">
+                      {related.featuredImage ? (
+                        <img 
+                          src={related.featuredImage} 
+                          alt={related.title} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-60 group-hover:opacity-100"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="p-6 opacity-40 group-hover:opacity-100 transition-opacity">
+                          {getIcon(related.icon)}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-accent-gold-primary">
