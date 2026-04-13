@@ -17,12 +17,31 @@ function LocationItem() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleToggle = (e: React.MouseEvent) => {
+    // On mobile, this will toggle. On desktop, it will also toggle if clicked.
+    setIsOpen(!isOpen);
+  };
+
+  const handleMouseEnter = () => {
+    // Only trigger hover reveal on devices that support hover
+    if (window.matchMedia('(hover: hover)').matches) {
+      setIsOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // Only trigger hover collapse on devices that support hover
+    if (window.matchMedia('(hover: hover)').matches) {
+      setIsOpen(false);
+    }
+  };
+
   return (
     <li 
       className="relative group"
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
-      onClick={() => setIsOpen(!isOpen)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleToggle}
     >
       <div className="flex items-start space-x-3 text-text-secondary text-sm group-hover:text-accent-gold-primary transition-all duration-300 cursor-pointer p-2 -m-2 rounded-lg hover:bg-white/5">
         <MapPin className="w-4 h-4 text-accent-gold-primary mt-0.5 flex-shrink-0" />
