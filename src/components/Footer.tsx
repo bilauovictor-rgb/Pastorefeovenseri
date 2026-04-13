@@ -111,6 +111,8 @@ export function Footer() {
           <div className="flex items-center space-x-6">
             <p className="gold-gradient-text font-bold">Built with Divine Excellence.</p>
             <span className="text-border-soft hidden md:block">|</span>
+            <p className="hover:text-accent-gold-primary transition-colors cursor-default">Built by Gigantic Computers</p>
+            <span className="text-border-soft hidden md:block">|</span>
             <Link to="/signin" className="hover:text-accent-gold-primary transition-colors">Admin Access</Link>
           </div>
         </div>
