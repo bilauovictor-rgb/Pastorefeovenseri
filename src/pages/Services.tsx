@@ -1,4 +1,4 @@
-import { Church, Globe, ShieldCheck, Briefcase, CheckCircle, HeartHandshake } from 'lucide-react';
+import { Music, BookOpen, Flame, Heart, CheckCircle, HeartHandshake } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SEO } from '../components/SEO';
 import { motion } from 'motion/react';
@@ -6,7 +6,7 @@ import { motion } from 'motion/react';
 export default function Services() {
   return (
     <div className="page-section active bg-bg-midnight min-h-screen">
-      <SEO title="Ministry Architecture" description="Explore the multi-dimensional ministry of Pastor Efe Ovenseri, covering pastoral care, global missions, administrative oversight, and marketplace leadership." />
+      <SEO title="Availeth City" description="Discover the heart of The Redeemed Assemblies, Availeth City — a ministry dedicated to worship, biblical teaching, prayer, and community impact." />
       
       {/* Hero Section */}
       <div className="relative overflow-hidden pt-32 pb-24 md:pt-40 md:pb-32 bg-bg-navy-deep">
@@ -19,13 +19,13 @@ export default function Services() {
             animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center px-4 py-2 rounded-full bg-white/5 border border-white/10 text-accent-gold-primary text-xs font-bold tracking-[0.3em] uppercase mb-8 backdrop-blur-md"
           >
-            Ministry Architecture
+            The Ministry
           </motion.div>
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold text-text-on-dark-primary mb-8 leading-[0.9] tracking-tighter">
-            Divine <span className="gold-gradient-text">Operations</span>
+            The Redeemed <span className="gold-gradient-text">Assemblies</span>
           </h1>
           <p className="text-xl md:text-2xl text-text-on-dark-secondary leading-relaxed font-light max-w-3xl mx-auto">
-            A structured overview of the pastoral, administrative, and global outreach divisions under the oversight of Pastor Efe Ovenseri.
+            Availeth City is a Christ-centered ministry committed to worship, biblical teaching, and community transformation under the leadership of Pastor Efe Ovenseri.
           </p>
         </div>
       </div>
@@ -46,16 +46,16 @@ export default function Services() {
             <div className="absolute inset-0 bg-gradient-to-br from-accent-gold-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             <div className="relative z-10">
               <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-10 border border-white/10 group-hover:border-accent-gold-primary/50 group-hover:scale-110 transition-all duration-500 shadow-premium">
-                <Church className="w-10 h-10 text-accent-gold-primary group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.8)] transition-all" />
+                <Music className="w-10 h-10 text-accent-gold-primary group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.8)] transition-all" />
               </div>
-              <h3 className="text-3xl font-display font-bold text-text-on-dark-primary mb-6 group-hover:text-accent-gold-primary transition-colors duration-500">Pastoral Leadership & Care</h3>
+              <h3 className="text-3xl font-display font-bold text-text-on-dark-primary mb-6 group-hover:text-accent-gold-primary transition-colors duration-500">Worship & Sunday Service</h3>
               <p className="text-text-on-dark-secondary leading-relaxed mb-10 text-lg font-light opacity-80">
-                Serving as the Senior Pastor of The Redeemed Assemblies, Availeith City. This arm is dedicated to direct congregational care, delivering transformative teachings, and cultivating a local community rooted in biblical truths and mutual love.
+                Experience the manifest presence of God during our weekly Sunday services. Our worship is a vibrant blend of contemporary and traditional expressions.
               </p>
               <ul className="space-y-5 text-text-on-dark-primary font-medium">
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Weekly Expository Teaching</li>
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Family & Marriage Counseling</li>
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Local Community Outreach</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Prophetic Worship Sessions</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Kingdom Testimony Sharing</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Dynamic Word Ministry</li>
               </ul>
             </div>
           </motion.div>
@@ -72,16 +72,16 @@ export default function Services() {
             <div className="absolute inset-0 bg-gradient-to-br from-accent-gold-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             <div className="relative z-10">
               <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-10 border border-white/10 group-hover:border-accent-gold-primary/50 group-hover:scale-110 transition-all duration-500 shadow-premium">
-                <Globe className="w-10 h-10 text-accent-gold-primary group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.8)] transition-all" />
+                <BookOpen className="w-10 h-10 text-accent-gold-primary group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.8)] transition-all" />
               </div>
-              <h3 className="text-3xl font-display font-bold text-text-on-dark-primary mb-6 group-hover:text-accent-gold-primary transition-colors duration-500">Global Mission Directorate</h3>
+              <h3 className="text-3xl font-display font-bold text-text-on-dark-primary mb-6 group-hover:text-accent-gold-primary transition-colors duration-500">Biblical Teaching</h3>
               <p className="text-text-on-dark-secondary leading-relaxed mb-10 text-lg font-light opacity-80">
-                Operating as the Mission Director across the ministry network. This division oversees cross-cultural evangelism, supports international church plants, and coordinates critical relationships between pastors and missionaries.
+                Foundationally rooted in the Word, we provide structured teaching tracks to build believers into mature spiritual leaders and marketplace excellence.
               </p>
               <ul className="space-y-5 text-text-on-dark-primary font-medium">
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> International Pastoral Networking</li>
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Cross-Border Evangelism</li>
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Missionary Funding & Support</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Foundation Discipleship Track</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Leadership Excellence Schools</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Expository Bible Studies</li>
               </ul>
             </div>
           </motion.div>
@@ -98,16 +98,16 @@ export default function Services() {
             <div className="absolute inset-0 bg-gradient-to-br from-accent-gold-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             <div className="relative z-10">
               <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-10 border border-white/10 group-hover:border-accent-gold-primary/50 group-hover:scale-110 transition-all duration-500 shadow-premium">
-                <ShieldCheck className="w-10 h-10 text-accent-gold-primary group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.8)] transition-all" />
+                <Flame className="w-10 h-10 text-accent-gold-primary group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.8)] transition-all" />
               </div>
-              <h3 className="text-3xl font-display font-bold text-text-on-dark-primary mb-6 group-hover:text-accent-gold-primary transition-colors duration-500">Administrative Oversight</h3>
+              <h3 className="text-3xl font-display font-bold text-text-on-dark-primary mb-6 group-hover:text-accent-gold-primary transition-colors duration-500">Prayer & Growth</h3>
               <p className="text-text-on-dark-secondary leading-relaxed mb-10 text-lg font-light opacity-80">
-                As General Assistant Superintendent, Pastor Ovenseri provides critical structural and administrative support to the General Superintendent, ensuring that the entire ministry operates with excellence, order, and strategic foresight.
+                Intercession is the engine of our ministry. We maintain consistent prayer altars that facilitate personal breakthroughs and community transformation.
               </p>
               <ul className="space-y-5 text-text-on-dark-primary font-medium">
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Organizational Strategy</li>
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Leadership Development</li>
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Structural Compliance</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Mid-night Prayer Altars</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Prophetic Intercession Units</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> 24/7 Prayer Coverages</li>
               </ul>
             </div>
           </motion.div>
@@ -124,16 +124,16 @@ export default function Services() {
             <div className="absolute inset-0 bg-gradient-to-br from-accent-gold-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             <div className="relative z-10">
               <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-10 border border-white/10 group-hover:border-accent-gold-primary/50 group-hover:scale-110 transition-all duration-500 shadow-premium">
-                <Briefcase className="w-10 h-10 text-accent-gold-primary group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.8)] transition-all" />
+                <Heart className="w-10 h-10 text-accent-gold-primary group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.8)] transition-all" />
               </div>
-              <h3 className="text-3xl font-display font-bold text-text-on-dark-primary mb-6 group-hover:text-accent-gold-primary transition-colors duration-500">Marketplace & Enterprise</h3>
+              <h3 className="text-3xl font-display font-bold text-text-on-dark-primary mb-6 group-hover:text-accent-gold-primary transition-colors duration-500">Outreach & Impact</h3>
               <p className="text-text-on-dark-secondary leading-relaxed mb-10 text-lg font-light opacity-80">
-                A testament to the balanced Christian life. Bringing integrity and kingdom values into the secular workspace through extensive involvement in international import/export, civil engineering operations, and entrepreneurship.
+                Beyond the walls of the sanctuary, we reach out to the broken, vulnerable, and unchurched, bringing the practical love of Christ and community care.
               </p>
               <ul className="space-y-5 text-text-on-dark-primary font-medium">
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Business Mentorship</li>
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Kingdom Wealth Principles</li>
-                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Professional Integrity Training</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Local Community Feedings</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Global Mission Summits</li>
+                <li className="flex items-center group/item"><CheckCircle className="w-6 h-6 text-accent-gold-primary mr-4 transition-transform group-hover/item:scale-110" /> Prison & Hospital Visits</li>
               </ul>
             </div>
           </motion.div>

@@ -133,7 +133,7 @@ export function Footer() {
             <ul className="space-y-4">
               <li><Link to="/" className="text-text-secondary hover:text-accent-gold-primary transition-all duration-300 text-sm font-medium hover:translate-x-1 inline-block">Overview</Link></li>
               <li><Link to="/about" className="text-text-secondary hover:text-accent-gold-primary transition-all duration-300 text-sm font-medium hover:translate-x-1 inline-block">Full Biography</Link></li>
-              <li><Link to="/services" className="text-text-secondary hover:text-accent-gold-primary transition-all duration-300 text-sm font-medium hover:translate-x-1 inline-block">Ministry Architecture</Link></li>
+              <li><Link to="/services" className="text-text-secondary hover:text-accent-gold-primary transition-all duration-300 text-sm font-medium hover:translate-x-1 inline-block">Availeth City</Link></li>
               <li><Link to="/resources/sermons" className="text-text-secondary hover:text-accent-gold-primary transition-all duration-300 text-sm font-medium hover:translate-x-1 inline-block">Digital Resources</Link></li>
             </ul>
           </div>

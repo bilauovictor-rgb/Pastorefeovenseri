@@ -24,7 +24,7 @@ export default function About() {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-bg-midnight overflow-x-hidden relative">
-      <SEO title="Biography" description="Discover the journey of Pastor Efe Ovenseri. From early spiritual foundations to global leadership in ministry and marketplace excellence." />
+      <SEO title="Biography" description="Discover the journey of Pastor Efe Ovenseri, Senior Pastor of The Redeemed Assemblies, Availeth City. From early spiritual foundations to global leadership in ministry and marketplace excellence." />
       
       {/* Divine Geometry Background */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">

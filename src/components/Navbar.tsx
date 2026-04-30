@@ -24,7 +24,7 @@ export function Navbar() {
   const navLinks = [
     { name: 'Platform', path: '/' },
     { name: 'Biography', path: '/about' },
-    { name: 'Ministry Arms', path: '/services' },
+    { name: 'Availeth City', path: '/services' },
   ];
 
   const resourceCategories = [

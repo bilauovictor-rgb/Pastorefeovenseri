@@ -88,19 +88,19 @@ export default function Blog() {
     switch (category) {
       case 'leadership-podcasts':
         return {
-          title: 'Audio & Video Teachings & Prayers',
-          description: 'Access a divine collection of prophetic prayers, sermon messages, and spiritual teachings designed to empower your walk with God.'
+          title: 'Teachings & Prayers',
+          description: 'Access a divine collection of prophetic prayers and spiritual teachings at Availeth City designed to empower your walk with God.'
         };
       case 'events':
         return {
-          title: 'Ministry Events',
-          description: 'Stay updated with upcoming conferences, global summits, and ministry gatherings. Join Pastor Efe Ovenseri for powerful spiritual encounters and leadership.'
+          title: 'Upcoming Events',
+          description: 'Join Pastor Efe Ovenseri at The Redeemed Assemblies, Availeth City for powerful spiritual encounters and leadership conferences in London.'
         };
       case 'sermons':
       default:
         return {
           title: 'Sermon Archive',
-          description: 'Access transformative teachings and divine messages from Pastor Efe Ovenseri. Explore our library of sermons designed to empower your faith and spiritual life.'
+          description: 'Explore the library of transformational sermon messages from Pastor Efe Ovenseri at The Redeemed Assemblies, Availeth City, London.'
         };
     }
   }, [category]);

@@ -84,7 +84,7 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-bg-midnight relative overflow-hidden">
-      <SEO title="Contact & Partnership" description="Connect with Pastor Efe Ovenseri for speaking engagements, ministry partnerships, or church membership inquiries. We look forward to hearing from you today." />
+      <SEO title="Contact & Partnership" description="Connect with The Redeemed Assemblies, Availeth City and Pastor Efe Ovenseri for speaking engagements, ministry partnerships, or church membership inquiries." />
       
       {/* Divine Glow Elements */}
       <div className="divine-glow -top-40 -right-40 opacity-30"></div>

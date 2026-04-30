@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Users, Globe, Briefcase, ChevronRight, Star, HeartHandshake, Play, Calendar, Shield, Target, Zap, Quote, Newspaper, Bell, Clock, MapPin } from 'lucide-react';
+import { ArrowRight, Users, Globe, Briefcase, ChevronRight, Star, HeartHandshake, Play, Calendar, Shield, Target, Zap, Quote, Newspaper, Bell, Clock, MapPin, Music, BookOpen, Flame, Heart } from 'lucide-react';
 import { FadeInUp } from '../components/FadeInUp';
 import { LazySection } from '../components/LazySection';
 import { LazyYouTube } from '../components/LazyYouTube';
@@ -141,50 +141,45 @@ export default function Home() {
 
   const bentoItems = [
     {
-      title: "Pastoral Ministry",
-      description: "Senior Pastor of The Redeemed Assemblies, Availeith City. Building strong families and localized spiritual growth.",
-      icon: <Users className="w-8 h-8 text-accent-gold-primary" />,
+      title: "Worship & Sunday Service",
+      description: "Join our vibrant community for powerful worship and transformational Sunday services. Experience the presence of God through music, testimony, and the living Word.",
+      icon: <Music className="w-8 h-8 text-accent-gold-primary" />,
       size: "lg:col-span-8 lg:row-span-2",
       link: "/services",
       delay: 0.1
     },
     {
-      title: "Global Missions",
-      description: "Coordinating pastoral relationships across borders and facilitating church planting initiatives.",
-      icon: <Globe className="w-8 h-8 text-accent-gold-primary" />,
+      title: "Biblical Teaching",
+      description: "Deepen your understanding of scripture through our discipleship programs and in-depth biblical teachings designed for spiritual maturity.",
+      icon: <BookOpen className="w-8 h-8 text-accent-gold-primary" />,
       size: "lg:col-span-4 lg:row-span-2",
       link: "/services",
       delay: 0.2
     },
     {
-      title: "Marketplace",
-      description: "Integrating faith with high-level entrepreneurship and civil engineering excellence.",
-      icon: <Briefcase className="w-8 h-8 text-accent-gold-primary" />,
+      title: "Prayer & Growth",
+      description: "Atmosphere of prophetic prayer and spiritual growth initiatives to strengthen your personal walk with Christ.",
+      icon: <Flame className="w-8 h-8 text-accent-gold-primary" />,
       size: "lg:col-span-4 lg:row-span-1",
       link: "/services",
       delay: 0.3
     },
     {
-      title: "Leadership",
-      description: "Empowering the next generation of leaders with kingdom principles.",
-      icon: <Shield className="w-8 h-8 text-accent-gold-primary" />,
-      size: "lg:col-span-4 lg:row-span-1",
+      title: "Outreach & Impact",
+      description: "Demonstrating God's love through community transformation and global mission initiatives.",
+      icon: <Heart className="w-8 h-8 text-accent-gold-primary" />,
+      size: "lg:col-span-8 lg:row-span-1",
       link: "/services",
       delay: 0.4
-    },
-    {
-      title: "Vision",
-      description: "Expanding the Kingdom through strategic spiritual leadership.",
-      icon: <Target className="w-8 h-8 text-accent-gold-primary" />,
-      size: "lg:col-span-4 lg:row-span-1",
-      link: "/services",
-      delay: 0.5
     }
   ];
 
   return (
     <div ref={containerRef} className="min-h-screen bg-bg-midnight overflow-x-hidden relative">
-      <SEO title="Home" description="Welcome to the global ministry of Pastor Efe Ovenseri. Empowering lives and expanding the Kingdom through spiritual leadership and marketplace excellence." />
+      <SEO 
+        title="The Redeemed Assemblies, Availeth City | Pastor Efe Ovenseri" 
+        description="Welcome to The Redeemed Assemblies, Availeth City — a Christ-centered ministry in London under the leadership of Pastor Efe Ovenseri, empowering lives through worship, biblical teaching, prayer, outreach, and discipleship." 
+      />
       
       {/* Divine Geometry Parallax Elements */}
       <div className="divine-geometry divine-circle w-[600px] h-[600px] top-[-10%] left-[-10%] opacity-10" />
@@ -228,14 +223,14 @@ export default function Home() {
           
           <div className="animate-fade-in-up delay-100">
             <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-display font-black text-white tracking-tighter leading-[0.9] mb-8 text-shadow-divine">
-              Empowering <span className="gold-gradient-text">Lives.</span><br />
-              Expanding <span className="italic font-normal">the</span> Kingdom.
+              The <span className="gold-gradient-text">Redeemed</span><br />
+              Assemblies, <span className="italic font-normal">Availeth City.</span>
             </h1>
           </div>
           
           <div className="animate-fade-in-up delay-200">
             <p className="max-w-2xl mx-auto text-lg md:text-xl text-text-secondary leading-relaxed mb-12 font-light">
-              Pastor Efe Ovenseri bridges the gap between deep spiritual calling and marketplace excellence. A journey of divine purpose and unwavering dedication.
+              Experience the transformational London ministry of Pastor Efe Ovenseri. At Availeth City, we are dedicated to worship, prayer, biblical teaching, outreach, and discipleship to empower lives and expand the Kingdom.
             </p>
           </div>
           
@@ -266,7 +261,7 @@ export default function Home() {
                 <h2 className="text-xs font-bold text-accent-gold-primary uppercase tracking-[0.3em] mb-4">Global Impact</h2>
                 <h3 className="text-4xl md:text-6xl font-display font-bold text-white mb-8">A Vision That <br />Spans Nations</h3>
                 <p className="text-text-muted text-lg font-light leading-relaxed mb-10">
-                  From the heart of Availeith City to the ends of the earth, our mission is driven by a singular vision: to see lives transformed by the power of the Gospel and the excellence of Kingdom leadership.
+                  From the heart of Availeth City in London to the ends of the earth, our mission is driven by a singular vision: to see lives transformed by the power of the Gospel and the excellence of Kingdom leadership.
                 </p>
                 <div className="grid grid-cols-2 gap-8">
                   <div>
@@ -324,12 +319,15 @@ export default function Home() {
         </div>
       </LazySection>
 
-      {/* Ministry Arms - Bento Box Grid */}
+      {/* Ministry Section - Bento Box Grid */}
       <LazySection className="section-padding relative bg-bg-navy-soft">
         <div className="container mx-auto px-4">
-          <FadeInUp className="text-center mb-20">
-            <h2 className="text-xs font-bold text-accent-gold-primary uppercase tracking-[0.3em] mb-4">Ministry Architecture</h2>
-            <h3 className="text-4xl md:text-6xl font-display font-bold text-white mb-6">A Multi-Dimensional Impact</h3>
+          <FadeInUp className="text-center mb-20 text-center flex flex-col items-center">
+            <h2 className="text-xs font-bold text-accent-gold-primary uppercase tracking-[0.3em] mb-4">Availeth City</h2>
+            <h3 className="text-4xl md:text-6xl font-display font-bold text-white mb-6">The Redeemed Assemblies, Availeth City</h3>
+            <p className="max-w-3xl text-text-muted text-lg font-light leading-relaxed">
+              Availeth City is a Christ-centered ministry committed to worship, biblical teaching, prayer, discipleship, outreach, and community transformation under the leadership of Pastor Efe Ovenseri.
+            </p>
           </FadeInUp>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">

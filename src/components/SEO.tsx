@@ -8,9 +8,9 @@ interface SEOProps {
   type?: string;
 }
 
-const baseTitle = "Pastor Efe Ovenseri";
-const baseDescription = "Pastor Efe Ovenseri | Global Ministry & Leadership";
-const defaultImage = "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?q=80&w=2073&auto=format&fit=crop"; // Default fallback image
+const baseTitle = "The Redeemed Assemblies, Availeth City";
+const baseDescription = "Welcome to The Redeemed Assemblies, Availeth City — a Christ-centered ministry under the leadership of Pastor Efe Ovenseri in London.";
+const defaultImage = "https://res.cloudinary.com/dg5zoqaxo/image/upload/f_auto,q_auto/pastor-efe/og/efe-preview.jpg"; // Updated to use Cloudinary OG image
 
 export function SEO({ title, description, image, url, type = 'website' }: SEOProps) {
   const fullTitle = title ? `${title} | ${baseTitle}` : baseTitle;
