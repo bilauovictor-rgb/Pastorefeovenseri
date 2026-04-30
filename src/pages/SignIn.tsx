@@ -8,7 +8,7 @@ import { LogIn, ShieldCheck, AlertCircle, Loader2, ArrowRight } from 'lucide-rea
 
 const ADMIN_EMAIL = "officialgiganticcomputers@gmail.com";
 
-export function SignIn() {
+export default function SignIn() {
   const [user, loading] = useAuthState(auth);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();

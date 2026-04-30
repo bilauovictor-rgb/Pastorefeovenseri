@@ -26,7 +26,7 @@ interface Resource {
   location?: string;
 }
 
-export function Blog() {
+export default function Blog() {
   const { category } = useParams();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -247,21 +247,9 @@ export function Blog() {
     setIsRSVPModalOpen(true);
   };
 
-  const handleRSVP = (e: React.MouseEvent, resource: Resource) => {
-    e.stopPropagation();
-    setSelectedEvent(resource);
-    setIsRSVPModalOpen(true);
-  };
-
   return (
     <div className="min-h-screen bg-bg-midnight pt-20">
       <SEO title={pageInfo.title} description={pageInfo.description} />
-      
-      <RSVPModal 
-        isOpen={isRSVPModalOpen}
-        onClose={() => setIsRSVPModalOpen(false)}
-        eventTitle={selectedEvent?.title || ''}
-      />
       
       <RSVPModal 
         isOpen={isRSVPModalOpen}

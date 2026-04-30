@@ -4,7 +4,7 @@ import { SEO } from '../components/SEO';
 import { collection, addDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 
-export function Contact() {
+export default function Contact() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',

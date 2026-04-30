@@ -13,15 +13,15 @@ import { VoiceAssistant } from './components/VoiceAssistant';
 import { Chatbot } from './components/Chatbot';
 
 // Lazy load pages
-const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
-const About = lazy(() => import('./pages/About').then(module => ({ default: module.About })));
-const Services = lazy(() => import('./pages/Services').then(module => ({ default: module.Services })));
-const Blog = lazy(() => import('./pages/Blog').then(module => ({ default: module.Blog })));
-const SermonDetail = lazy(() => import('./pages/SermonDetail').then(module => ({ default: module.SermonDetail })));
-const Contact = lazy(() => import('./pages/Contact').then(module => ({ default: module.Contact })));
-const Admin = lazy(() => import('./pages/Admin').then(module => ({ default: module.Admin })));
-const SignIn = lazy(() => import('./pages/SignIn').then(module => ({ default: module.SignIn })));
-const SignUp = lazy(() => import('./pages/SignUp').then(module => ({ default: module.SignUp })));
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Services = lazy(() => import('./pages/Services'));
+const Blog = lazy(() => import('./pages/Blog'));
+const SermonDetail = lazy(() => import('./pages/SermonDetail'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Admin = lazy(() => import('./pages/Admin'));
+const SignIn = lazy(() => import('./pages/SignIn'));
+const SignUp = lazy(() => import('./pages/SignUp'));
 
 function LoadingFallback() {
   return (

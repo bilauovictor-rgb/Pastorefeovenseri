@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { SEO } from '../components/SEO';
 import { motion } from 'motion/react';
 
-export function Services() {
+export default function Services() {
   return (
     <div className="page-section active bg-bg-midnight min-h-screen">
       <SEO title="Ministry Architecture" description="Explore the multi-dimensional ministry of Pastor Efe Ovenseri, covering pastoral care, global missions, administrative oversight, and marketplace leadership." />

@@ -35,7 +35,7 @@ interface Resource {
   status?: string;
 }
 
-export function SermonDetail() {
+export default function SermonDetail() {
   const { id, slug } = useParams();
   const location = useLocation();
   const [user, authLoading] = useAuthState(auth);

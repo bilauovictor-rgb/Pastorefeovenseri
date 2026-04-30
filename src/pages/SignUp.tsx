@@ -4,7 +4,7 @@ import { SEO } from '../components/SEO';
 import { motion } from 'motion/react';
 import { ShieldCheck, Mail, User, Send, CheckCircle, ArrowLeft } from 'lucide-react';
 
-export function SignUp() {
+export default function SignUp() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: '',

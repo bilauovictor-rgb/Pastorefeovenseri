@@ -33,7 +33,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 const ADMIN_EMAIL = "officialgiganticcomputers@gmail.com";
 
-export function Admin() {
+export default function Admin() {
   const [user, loadingAuth] = useAuthState(auth);
   const [sermons, setSermons] = useState<any[]>([]);
   const [selectedSermon, setSelectedSermon] = useState<any | null>(null);

@@ -19,7 +19,7 @@ interface Metrics {
   divineDedication: number;
 }
 
-export function Home() {
+export default function Home() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [status, setStatus] = useState<{ isLive: boolean, nextService: string } | null>(null);
   const [latestVideo, setLatestVideo] = useState<any>(null);

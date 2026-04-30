@@ -5,7 +5,7 @@ import { SEO } from '../components/SEO';
 import { motion, useScroll, useTransform, useSpring } from 'motion/react';
 import { useRef } from 'react';
 
-export function About() {
+export default function About() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
