@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Users, Globe, Briefcase, ChevronRight, Star, HeartHandshake, Play, Calendar, Shield, Target, Zap, Quote, Newspaper, Bell, Clock, MapPin } from 'lucide-react';
 import { FadeInUp } from '../components/FadeInUp';
+import { LazySection } from '../components/LazySection';
+import { LazyYouTube } from '../components/LazyYouTube';
 import { AnimatedCounter } from '../components/AnimatedCounter';
 import { SEO } from '../components/SEO';
 import { useEffect, useState, useRef } from 'react';
@@ -185,41 +187,32 @@ export function Home() {
       <SEO title="Home" description="Welcome to the global ministry of Pastor Efe Ovenseri. Empowering lives and expanding the Kingdom through spiritual leadership and marketplace excellence." />
       
       {/* Divine Geometry Parallax Elements */}
-      <motion.div style={{ y: y1, rotate }} className="divine-geometry divine-circle w-[600px] h-[600px] top-[-10%] left-[-10%]" />
-      <motion.div style={{ y: y2, rotate: -rotate }} className="divine-geometry divine-circle w-[400px] h-[400px] bottom-[10%] right-[-5%]" />
-      <motion.div style={{ y: y1 }} className="divine-geometry divine-line top-[30%] left-0" />
-      <motion.div style={{ y: y2 }} className="divine-geometry divine-line top-[70%] right-0" />
+      <div className="divine-geometry divine-circle w-[600px] h-[600px] top-[-10%] left-[-10%] opacity-10" />
+      <div className="divine-geometry divine-circle w-[400px] h-[400px] bottom-[10%] right-[-5%] opacity-10" />
+      <div className="divine-geometry divine-line top-[30%] left-0 opacity-10" />
+      <div className="divine-geometry divine-line top-[70%] right-0 opacity-10" />
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-20 divine-motion-bg">
         <div className="absolute inset-0 z-0 pointer-events-none">
           {/* Hero Image Carousel with Fade Effect */}
-          <AnimatePresence mode="wait">
-            <motion.div 
+          <div className="absolute inset-0 -z-10 animate-hero-fade">
+            <img 
               key={currentHeroIndex}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-              style={{ y: yBg, x: xBg, scale: scaleBg }} 
-              className="absolute inset-0 -z-10"
-            >
-              <img 
-                src={heroImages[currentHeroIndex]} 
-                alt="" 
-                className="w-full h-full object-cover opacity-15 mix-blend-overlay"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-bg-midnight via-bg-midnight/20 to-bg-midnight"></div>
-            </motion.div>
-          </AnimatePresence>
+              src={heroImages[currentHeroIndex]} 
+              alt="" 
+              className="w-full h-full object-cover opacity-15 mix-blend-overlay"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-bg-midnight via-bg-midnight/20 to-bg-midnight"></div>
+          </div>
           <div className="divine-glow top-[-10%] left-[-10%] opacity-40"></div>
           <div className="divine-glow bottom-[-10%] right-[-10%] opacity-30" style={{ background: 'radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%)' }}></div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(10,10,11,0)_0%,rgba(10,10,11,1)_100%)]"></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <FadeInUp>
+          <div className="animate-fade-in-up">
             <div className="flex flex-col items-center gap-6 mb-10">
               {status?.isLive && (
                 <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold tracking-widest uppercase animate-pulse">
@@ -231,22 +224,22 @@ export function Home() {
                 Senior Pastor • Missionary • Marketplace Leader
               </div>
             </div>
-          </FadeInUp>
+          </div>
           
-          <FadeInUp delay={0.1}>
+          <div className="animate-fade-in-up delay-100">
             <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-display font-black text-white tracking-tighter leading-[0.9] mb-8 text-shadow-divine">
               Empowering <span className="gold-gradient-text">Lives.</span><br />
               Expanding <span className="italic font-normal">the</span> Kingdom.
             </h1>
-          </FadeInUp>
+          </div>
           
-          <FadeInUp delay={0.2}>
+          <div className="animate-fade-in-up delay-200">
             <p className="max-w-2xl mx-auto text-lg md:text-xl text-text-secondary leading-relaxed mb-12 font-light">
               Pastor Efe Ovenseri bridges the gap between deep spiritual calling and marketplace excellence. A journey of divine purpose and unwavering dedication.
             </p>
-          </FadeInUp>
+          </div>
           
-          <FadeInUp delay={0.3}>
+          <div className="animate-fade-in-up delay-300">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link to="/contact" className="gold-premium-btn w-full sm:w-auto flex items-center justify-center gap-3">
                 <HeartHandshake className="w-5 h-5" />
@@ -256,7 +249,7 @@ export function Home() {
                 Explore Ministry <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
-          </FadeInUp>
+          </div>
         </div>
 
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50">
@@ -265,7 +258,7 @@ export function Home() {
       </section>
 
       {/* Circular Impact Hub */}
-      <section className="py-32 relative overflow-hidden bg-bg-navy-deep border-y border-border-soft">
+      <LazySection className="py-32 relative overflow-hidden bg-bg-navy-deep border-y border-border-soft">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-20">
             <div className="lg:w-1/2">
@@ -329,10 +322,10 @@ export function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </LazySection>
 
       {/* Ministry Arms - Bento Box Grid */}
-      <section className="section-padding relative bg-bg-navy-soft">
+      <LazySection className="section-padding relative bg-bg-navy-soft">
         <div className="container mx-auto px-4">
           <FadeInUp className="text-center mb-20">
             <h2 className="text-xs font-bold text-accent-gold-primary uppercase tracking-[0.3em] mb-4">Ministry Architecture</h2>
@@ -368,10 +361,10 @@ export function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </LazySection>
 
       {/* Latest Teaching */}
-      <section className="py-24 bg-bg-navy-deep border-y border-border-soft">
+      <LazySection className="py-24 bg-bg-navy-deep border-y border-border-soft">
         <div className="container mx-auto px-4">
           <FadeInUp className="text-center mb-16">
             <h2 className="text-xs font-bold text-accent-gold-primary uppercase tracking-[0.3em] mb-4">Latest Teaching</h2>
@@ -382,14 +375,9 @@ export function Home() {
             <div className="flex flex-col md:flex-row gap-12">
               <div className="w-full md:w-1/2 aspect-video bg-black rounded-2xl overflow-hidden ring-1 ring-border-soft">
                 {latestVideo && (
-                  <YouTube 
+                  <LazyYouTube 
                     videoId={latestVideo.youtubeId} 
-                    opts={{
-                      width: '100%',
-                      height: '100%',
-                      playerVars: { autoplay: 0, modestbranding: 1, rel: 0 },
-                    }}
-                    className="w-full h-full"
+                    title={latestVideo.title}
                   />
                 )}
               </div>
@@ -404,10 +392,10 @@ export function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </LazySection>
 
       {/* Testimonials Section */}
-      <section className="section-padding relative bg-bg-navy-soft overflow-hidden">
+      <LazySection className="section-padding relative bg-bg-navy-soft overflow-hidden">
         <div className="divine-glow top-0 right-0 opacity-10"></div>
         <div className="container mx-auto px-4 relative z-10">
           <FadeInUp className="text-center mb-16">
@@ -472,10 +460,10 @@ export function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </LazySection>
 
       {/* Latest News Section */}
-      <section className="section-padding relative bg-bg-navy-deep border-y border-border-soft">
+      <LazySection className="section-padding relative bg-bg-navy-deep border-y border-border-soft">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
             <FadeInUp className="text-left">
@@ -621,10 +609,10 @@ export function Home() {
             </div>
           </FadeInUp>
         </div>
-      </section>
+      </LazySection>
 
       {/* Events Calendar Section */}
-      <section className="section-padding relative bg-bg-navy-soft">
+      <LazySection className="section-padding relative bg-bg-navy-soft">
         <div className="container mx-auto px-4">
           <FadeInUp className="text-center mb-16">
             <h2 className="text-xs font-bold text-accent-gold-primary uppercase tracking-[0.3em] mb-4">Events Calendar</h2>
@@ -704,10 +692,10 @@ export function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </LazySection>
 
       {/* Global CTA */}
-      <section className="section-padding relative overflow-hidden bg-bg-midnight">
+      <LazySection className="section-padding relative overflow-hidden bg-bg-midnight">
         <div className="divine-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20"></div>
         <div className="container mx-auto px-4 relative z-10">
           <FadeInUp className="max-w-4xl mx-auto text-center">
@@ -724,7 +712,7 @@ export function Home() {
             </div>
           </FadeInUp>
         </div>
-      </section>
+      </LazySection>
     </div>
   );
 }

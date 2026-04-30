@@ -247,9 +247,21 @@ export function Blog() {
     setIsRSVPModalOpen(true);
   };
 
+  const handleRSVP = (e: React.MouseEvent, resource: Resource) => {
+    e.stopPropagation();
+    setSelectedEvent(resource);
+    setIsRSVPModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-bg-midnight pt-20">
       <SEO title={pageInfo.title} description={pageInfo.description} />
+      
+      <RSVPModal 
+        isOpen={isRSVPModalOpen}
+        onClose={() => setIsRSVPModalOpen(false)}
+        eventTitle={selectedEvent?.title || ''}
+      />
       
       <RSVPModal 
         isOpen={isRSVPModalOpen}
