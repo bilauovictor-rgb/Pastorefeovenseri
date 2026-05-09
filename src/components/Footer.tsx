@@ -206,13 +206,28 @@ export function Footer() {
         </div>
 
         <div className="border-t border-border-soft pt-12 flex flex-col md:flex-row justify-between items-center text-[10px] md:text-xs text-text-muted font-medium tracking-[0.2em] uppercase">
-          <p className="mb-6 md:mb-0">&copy; {new Date().getFullYear()} Pastor Efe Ovenseri Ministries. All rights reserved.</p>
-          <div className="flex items-center space-x-6">
-            <p className="gold-gradient-text font-bold">Built with Divine Excellence.</p>
-            <span className="text-border-soft hidden md:block">|</span>
-            <p className="hover:text-accent-gold-primary transition-colors cursor-default">Built by Gigantic Computers</p>
-            <span className="text-border-soft hidden md:block">|</span>
-            <Link to="/signin" className="hover:text-accent-gold-primary transition-colors">Admin Access</Link>
+          <div className="flex flex-col space-y-2 mb-8 md:mb-0 text-center md:text-left">
+            <p>&copy; {new Date().getFullYear()} Pastor Efe Ovenseri Ministries. All Rights Reserved.</p>
+            <div className="flex items-center justify-center md:justify-start space-x-4">
+              <Link to="/signin" className="hover:text-accent-gold-primary transition-colors">Admin Access</Link>
+              <span className="text-border-soft">|</span>
+              <p className="gold-gradient-text font-bold">Built with Divine Excellence.</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center md:items-end text-center md:text-right space-y-1.5">
+            <p className="text-text-muted font-bold tracking-[0.3em] uppercase">
+              Developed by <span className="text-accent-gold-primary">Gigantic Computers</span>
+            </p>
+            <a 
+              href="https://Bilauovictor.com" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-[9px] text-text-muted opacity-80 hover:opacity-100 hover:text-accent-gold-primary transition-all duration-300 relative group/dev tracking-[0.2em]"
+            >
+              https://Bilauovictor.com
+              <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-accent-gold-primary transition-all duration-300 group-hover/dev:w-full shadow-gold"></span>
+            </a>
           </div>
         </div>
       </div>
