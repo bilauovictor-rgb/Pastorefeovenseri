@@ -16,7 +16,15 @@ export function SEO({ title, description, image, url, type = 'website' }: SEOPro
   const fullTitle = title ? `${title} | ${baseTitle}` : baseTitle;
   const fullDescription = description || baseDescription;
   const ogImage = image || defaultImage;
-  const currentUrl = (url || (typeof window !== 'undefined' ? window.location.href : '')).replace('www.', '');
+  
+  // SEO optimization: ensure efeovenseri.net is the canonical domain
+  let currentUrl = url || (typeof window !== 'undefined' ? window.location.origin + window.location.pathname : 'https://efeovenseri.net/');
+  if (currentUrl.includes('efeovenseri.net')) {
+    currentUrl = currentUrl.replace('www.efeovenseri.net', 'efeovenseri.net');
+  } else if (typeof window !== 'undefined' && !url) {
+    // If we're on a dev/preview domain, still point canonical to production
+    currentUrl = `https://efeovenseri.net${window.location.pathname}`;
+  }
 
   return (
     <Helmet>
