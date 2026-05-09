@@ -16,12 +16,13 @@ export function SEO({ title, description, image, url, type = 'website' }: SEOPro
   const fullTitle = title ? `${title} | ${baseTitle}` : baseTitle;
   const fullDescription = description || baseDescription;
   const ogImage = image || defaultImage;
-  const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+  const currentUrl = (url || (typeof window !== 'undefined' ? window.location.href : '')).replace('www.', '');
 
   return (
     <Helmet>
       <title>{fullTitle}</title>
       <meta name="description" content={fullDescription} />
+      <link rel="canonical" href={currentUrl} />
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />
